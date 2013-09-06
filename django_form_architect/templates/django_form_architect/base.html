@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang='en'>
+	<head>
+		<title>{% block title %}Django Form Architect{% endblock %}</title>
+		<link href='{{ STATIC_URL }}django_form_architect/css/base.css' rel='stylesheet' type='text/css' media='screen' />
+	</head>
+	<body>		
+		<div id='main-container'>
+			<div id='nav-wrapper'>
+				<ul id='nav'>
+					<li><a href='{% url dfa-home %}'>home</a></li>
+					<li><a href='{% url dfa-new %}'>new form</a></li>
+				</ul>
+				<div style='clear:both;'></div>				
+			</div>
+			<div id='main-content' class='left-gutter'>
+				{% block content %}
+				{% endblock %}
+			</div>
+		</div> 
+		
+		{% block javascript %}
+			<script src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js'></script>
+			<script src='//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js'></script>
+		{% endblock %}				
+	</body>
+</html>
