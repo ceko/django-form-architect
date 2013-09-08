@@ -119,6 +119,7 @@ dfb.ContextMenu = function() {
 	this.displayMenu = function($menu) {
 		this.$slide			
 			.show()
+			.find('.jq-slide-content')
 			.html($menu);
 		this.positionMenuAtActive();
 		return this;
@@ -136,7 +137,7 @@ dfb.ContextMenu = function() {
 	
 	this.positionMenuAtActive = function(suppress_animation) {
 		if(this.active_object) {
-			this.positionMenuAt(this.active_object.getElement().closest('.widget-wrap').position().top, suppress_animation);
+			this.positionMenuAt(this.active_object.getElement().closest('.widget-wrap').position().top+20, suppress_animation);
 		}
 	}
 	
@@ -455,7 +456,9 @@ dfb.WidgetPage = function(options) {
 			hoverClass: 'ui-state-hover',
 			accept: '.pageable',
 			drop: function(evt, ui) {				
-				dfb_globals.builder.getCurrentPage().moveWidgetTo(ui.draggable.find('.widget').data('widget'), _this);
+				var widget = ui.draggable.find('.widget').data().widget;
+				dfb_globals.builder.getCurrentPage().moveWidgetTo(widget, _this);
+				window.dfb_globals.context_menu.hideIfActive(widget);
 			}
 		});
 		if(this.settings.selected) {
@@ -1278,7 +1281,7 @@ dfb.ui.Window = function(options) {
 		
 	};
 	
-	this.remove = function() {
+	this.remove = function() {		
 		var removeElement = function() { $window.remove() };
 		
 		switch(settings.animation_type) {

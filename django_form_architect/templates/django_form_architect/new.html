@@ -21,9 +21,6 @@
 			
 			var widget = null;
 			
-			//widget = dfb_globals.builder.addWidget('dfb.widgets.RadioButton', '#radiobutton-field-template', {});
-			//widget.showContextMenu();
-			
 			var first_page = null;
 			{% for page in form.page_set.all %}
 				var page = dfb_globals.builder.addPage({{page.json_serialize|safe}});								
@@ -32,7 +29,7 @@
 					first_page = page;				
 				{% endif %}
 				{% for widget in page.active_widgets %}
-					dfb_globals.builder.addWidget('dfb.widgets.{{widget.short_type}}', '#{{widget.default_template}}', {{widget.json_serialize|safe}});
+					dfb_globals.builder.addWidget('dfb.widgets.{{widget.short_type}}', '#{{widget.default_template}}', {{widget.json_serialize|safe}}).showContextMenu();
 				{% endfor %}
 			{% empty %}
 				var page = dfb_globals.builder.addPage({
@@ -49,451 +46,459 @@
 {% endblock %}
 
 {% block content %}
-	<div class='wide-column'>
-		<div id='context-menu-container'>		
-		</div>
-	</div>
-	<div class='main-column'>
-		<div id='form-builder-container'>		
-		</div>
-		<div id='element-selector-container'>		
-		</div>		
-	</div>
-	
-	<div style='clear:both;'></div>
-	
-		<!-- pretty much all the work is done by javascript templates below -->
-		{% jsrender context-menu-template %}
-			<div id='context-menu'>
-				<div class='slide jq-slide'>
-					
+	<div class='gutter-outer-border'>
+		<div class='gutter-inner-border'>
+			<div class='wide-column'>
+				<div id='context-menu-container'>		
 				</div>
 			</div>
-		{% endjsrender %}
-		
-		
-		{% jsrender form-builder-template %}
-			<div id='form-builder'>
-				<input id='form-pid' type='hidden' value='{{:pid}}' />
-				<div id='form-title' class='jq-form-title form-title'>	
-					{{if title}}
-						{{:title}}
-					{{else}}
-						No form header.  Click to set or remove.						
-					{{/if}}										
+			<div class='main-column'>
+				<div id='form-builder-container'>		
 				</div>
-				<div id='form-description' class='jq-form-description form-description'>	
-					{{if description}}
-						{{:description}}
-					{{else}}
-						<p>
-							No form description.  This is meant to be an intro paragraph describing how you want the form filled out, what will happen after you fill out the form, etc.<br />
-							<br />  
-							Click here to set the description or remove it entirely.
-						</p>
-					{{/if}}  
-				</div>
-				<div id='pagination-tabs'>										
-					<div class='jq-add-page add-page'>
-						add
+				<div id='element-selector-container'>		
+				</div>		
+			</div>
+			
+			<div style='clear:both;'></div>
+			
+				<!-- pretty much all the work is done by javascript templates below -->
+				{% jsrender context-menu-template %}
+					<div id='context-menu'>
+						<div class='slide jq-slide'>
+							<div class='right-arrow'></div>
+							<div class='jq-slide-content'></div>
+						</div>
 					</div>
-				</div>
-				<div id='pagination-settings'>
-					<div class='collapsed toggle jq-toggle'>show settings <div class='arrow'></div></div>
-					<div class='delete-page jq-delete-page'></div>
-					<div class='settings jq-settings' style='display:none;'>
-						<label>Page name</label><input type='text' id='page-name' class='jq-page-name' />
-					</div>
-				</div>
-				<div id='form-builder-fields' class='element-selector-receiver no-items'>
-					
-				</div>
-				<div class='control-separator'></div>
-				<a href='#' id='save-button' class='button'>save</a>
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender widget-page %}
-			<div class='page{{if selected}} selected{{/if}}'>
-				{{>name}}
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender element-selector-template %}
-			<div id='element-selector'>
-				<div id='element-selector-options'>
-					<div class='form-element' data-widget-type='dfb.widgets.CheckBox' data-template-selector='#checkbox-field-template'>
-						checkbox
-					</div>
-					<div class='form-element' data-widget-type='dfb.widgets.TextBox' data-template-selector='#textbox-field-template'>
-						textbox
-					</div>
-					<div class='form-element' data-widget-type='dfb.widgets.TextArea' data-template-selector='#textarea-field-template'>
-						text area
-					</div>
-					<div class='form-element' data-widget-type='dfb.widgets.DropDown' data-template-selector='#dropdown-field-template'>
-						drop down
-					</div>
-					<div class='form-element' data-widget-type='dfb.widgets.SelectionTable' data-template-selector='#selection-table-field-template'>
-						selection table
-					</div>	
-					<div class='form-element' data-widget-type='dfb.widgets.SectionBreak' data-template-selector='#section-break-field-template'>
-						section break
-					</div>
-					<div class='form-element' data-widget-type='dfb.widgets.RadioButton' data-template-selector='#radiobutton-field-template'>
-						radio button
-					</div>										
-				</div>				
-			</div>
-		{% endjsrender %}
-		
-		<!-- form element templates follow --> 
-		
-		<!-- common elements -->
-		{% jsrender widget-common-label %}
-			<div class='jq-label label-wrap'>
-				<label {{if required}}class='required'{{/if}}><span class='jq-label-text'>{{> label }}</span><span class='required'>*</span></label>
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender widget-common-helptext %}
-			<div class='jq-help-text helptext-wrap'>
-				{{> help_text }}
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender widget-common-footer %}
-			<div class='clear-fix'></div>
-		{% endjsrender %}
-		
-		<!-- common context menu stuff -->
-		{% jsrender context-menu-common-header %}
-			<div class='context-header'>
-				<select class='jq-header'>
-					<option value='dfb.widgets.CheckBox' data-template-selector='#checkbox-field-template'>Checkbox</option>
-					<option value='dfb.widgets.TextBox' data-template-selector='#textbox-field-template'>TextBox</option>
-					<option value='dfb.widgets.TextArea' data-template-selector='#textarea-field-template'>Text Area</option>
-					<option value='dfb.widgets.DropDown' data-template-selector='#dropdown-field-template'>Dropdown</option>
-					<option value='dfb.widgets.SelectionTable' data-template-selector='#selection-table-field-template'>Selection Table</option>
-					<option value='dfb.widgets.SectionBreak' data-template-selector='#section-break-field-template'>Section Break</option>
-					<option value='dfb.widgets.RadioButton' data-template-selector='#radiobutton-field-template'>Radio Button</option>					
-				</select>
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender context-menu-common-label %}
-			<div class='context-option-group'>
-				<div class='context-option label'>
-					<label>Label</label>
-					<input type='text' class='jq-label' />
-				</div>
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender context-menu-common-default %}
-			<div class='context-option-group'>
-				<div class='context-option default'>
-					<label>Default</label>
-					<input type='text' class='jq-default' />
-				</div>
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender context-menu-common-help %}
-			<div class='context-option-group'>
-				<div class='context-option help-text'>
-					<label>Help Text</label>
-					<textarea class='jq-help-text' />
-				</div>
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender context-menu-common-required %}
-			<div class='context-option required'>
-				<label>Required</label>
-				<input type='checkbox' class='jq-required' />
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender context-menu-common-size %}
-			<div class='context-option size'>
-				Size 
-				<select class='jq-size'>
-					<option value='s'>small</option>
-					<option value='m'>medium</option>
-					<option value='l'>large</option>
-				</select>
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender context-menu-content-type %}
-			<div class='context-option-group'>
-				<div class='context-option content-type'>
-					Content Type
-					<select class='jq-content-type'>
-						<option value='text'>text</option>
-						<option value='richtext'>rich text</option>
-					</select>
-				</div>
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender context-menu-option-group %}
-			{{for ~options}}
-				{{include tmpl="#context-menu-option-group-row" ~index=#index /}}
-			{{/for}}
-			<div class='jq-add add-option'></div>
-		{% endjsrender %}
-		
-		{% jsrender context-menu-option-group-row %}			
-			<div class='option-wrapper {{if ~allowSelection}}selectable{{/if}}'>				
-				{{if ~allowSelection}}				
-					{{if ~allowMultiple}}		
-						<input type='checkbox' value='{{:~index}}' name='{{:~groupName}}' {{if selected}}checked='checked'{{/if}} />
-					{{else}}
-						<input type='radio' value='{{:~index}}' name='{{:~groupName}}' {{if selected}}checked='checked'{{/if}} />						
-					{{/if}}
-				{{/if}}
-				<input type='text' value='{{>text}}' />
-				<div class='jq-remove remove-option' data-index='{{:~index}}'></div>
-			</div>			
-		{% endjsrender %}
-		
-		<!-- widgets -->
-		{% jsrender widget-controls %}
-			<div class='controls'>				
-				<div class='remove jq-remove-widget'></div>
-				<div class='duplicate jq-duplicate-widget'></div>
-			</div>			
-		{% endjsrender %}
-		
-		<!-- checkbox -->
-		{% jsrender checkbox-field-template-row %}
-			<label><input type='checkbox' class='jq-input' disabled='disabled' {{if selected}}checked='checked'{{/if}} /><span>{{>text}}</span></label>
-		{% endjsrender %}
-					
-		{% jsrender checkbox-field-template %}			
-			<div class='widget checkbox'>
-				{{include tmpl="#widget-common-label" /}}
-				<div class='option-wrap'>
-					{{for options}}				
-						{{include tmpl="#checkbox-field-template-row" /}}
-					{{/for}}
-				</div>				
-				{{include tmpl="#widget-common-helptext" /}}
-				{{include tmpl="#widget-common-footer" /}}
-			</div>
-		{% endjsrender %}
+				{% endjsrender %}
 				
-		{% jsrender checkbox-context-menu-template %}
-			<div class='context-menu checkbox'>
-				{{include tmpl="#context-menu-common-header" /}}
-				{{include tmpl="#context-menu-common-label" /}}
-				<div class='context-option-group jq-checkbox-options'>					
-					Options					
-					{{include tmpl="#context-menu-option-group" ~allowSelection=true ~allowMultiple=true ~groupName='ctx-checkbox-options' ~options=options /}}
-				</div>
-				<div class='context-option-group'>
-					{{include tmpl="#context-menu-common-required" /}}					
-				</div>
-				{{include tmpl="#context-menu-common-help" /}}
-			</div>
-		{% endjsrender %}
-		
-		<!-- radio button -->
-		{% jsrender radiobutton-field-template-row %}			
-			<label><input type='radio' class='jq-input' name='radio-buttons-{{:~groupId}}' value='{{>text}}' disabled='disabled' {{if selected}}checked='checked'{{/if}} /><span>{{>text}}</span></label>
-		{% endjsrender %}
-					
-		{% jsrender radiobutton-field-template %}						
-			<div class='widget radiobutton'>			
-				{{include tmpl="#widget-common-label" /}}
-				<div class='option-wrap'>
-					{{for options}}				
-						{{include tmpl="#radiobutton-field-template-row" ~groupId=~root.uID /}}
-					{{/for}}
-				</div>				
-				{{include tmpl="#widget-common-helptext" /}}
-				{{include tmpl="#widget-common-footer" /}}
-			</div>
-		{% endjsrender %}
 				
-		{% jsrender radiobutton-context-menu-template %}
-			<div class='context-menu radiobutton'>
-				{{include tmpl="#context-menu-common-header" /}}
-				{{include tmpl="#context-menu-common-label" /}}
-				<div class='context-option-group jq-checkbox-options'>					
-					Options					
-					{{include tmpl="#context-menu-option-group" ~allowSelection=true ~allowMultiple=false ~groupName='ctx-radiobutton-options' ~options=options /}}
-				</div>
-				<div class='context-option-group'>
-					{{include tmpl="#context-menu-common-required" /}}					
-				</div>
-				{{include tmpl="#context-menu-common-help" /}}
-			</div>
-		{% endjsrender %}
-		
-		<!-- textbox -->
-		{% jsrender textbox-field-template %}
-			<div class='widget textbox'>
-				{{include tmpl="#widget-common-label" /}}				
-				<input type='text' class='jq-input jq-sizable jq-defaultable {{:size}}' data-size='{{:size}}' value='{{>default}}' disabled='disabled' />
-				{{include tmpl="#widget-common-helptext" /}}
-				{{include tmpl="#widget-common-footer" /}}
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender textbox-context-menu-template %}
-			<div class='context-menu textbox'>
-				{{include tmpl="#context-menu-common-header" /}}
-				{{include tmpl="#context-menu-common-label" /}}
-				{{include tmpl="#context-menu-common-default" /}}
-				<div class='context-option-group'>
-					{{include tmpl="#context-menu-common-required" /}}
-					{{include tmpl="#context-menu-common-size" /}}
-				</div>
-				{{include tmpl="#context-menu-common-help" /}}
-			</div>
-		{% endjsrender %}
-		
-		<!-- section break -->
-		{% jsrender section-break-field-template %}
-			<div class='widget section-break'>
-				{{include tmpl="#widget-common-label" /}}
-				{{include tmpl="#widget-common-helptext" /}}				
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender section-break-context-menu-template %}
-			<div class='context-menu section-break'>
-				{{include tmpl="#context-menu-common-header" /}}
-				{{include tmpl="#context-menu-common-label" /}}				
-				{{include tmpl="#context-menu-common-help" /}}
-			</div>
-		{% endjsrender %}
-		
-		<!-- text area -->
-		{% jsrender textarea-field-template %}
-			<div class='widget textarea'>			
-				{{include tmpl="#widget-common-label" /}}				
-				<div id='input-{{:uID}}-richtext-cover' class='richtext-cover' {{if content_type != 'richtext'}}style='display:none;'{{/if}}></div>
-				<textarea id='input-{{:uID}}' class='jq-input-handle-{{:uID}} jq-input jq-sizable jq-defaultable jq-configurable-content-type {{:size}}' {{if content_type == 'richtext'}}style='display:none;'{{/if}} data-content-type='{{:content_type}}' data-size='{{:size}}' disabled='disabled'>{{>default}}</textarea>				
-				{{include tmpl="#widget-common-helptext" /}}
-				{{include tmpl="#widget-common-footer" /}}
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender textarea-context-menu-template %}
-			<div class='context-menu textarea'>
-				{{include tmpl="#context-menu-common-header" /}}
-				{{include tmpl="#context-menu-common-label" /}}
-				{{include tmpl="#context-menu-common-default" /}}
-				<div class='context-option-group'>
-					{{include tmpl="#context-menu-common-required" /}}
-					{{include tmpl="#context-menu-common-size" /}}
-				</div>
-				{{include tmpl="#context-menu-content-type" /}}
-				{{include tmpl="#context-menu-common-help" /}}
-			</div>
-		{% endjsrender %}
-		
-		<!-- dropdown -->
-		{% jsrender dropdown-field-template %}
-			<div class='widget dropdown'>
-				{{include tmpl="#widget-common-label" /}}	
-				<select class='jq-input jq-sizable {{:size}}' data-size='{{:size}}' disabled='disabled'>
-					{{for options}}
-						<option value='{{>text}}' {{if selected}}selected='selected'{{/if}}>{{>text}}</option>
+				{% jsrender form-builder-template %}
+					<div id='form-builder'>
+						<input id='form-pid' type='hidden' value='{{:pid}}' />
+						<div id='form-title' class='jq-form-title form-title'>	
+							{{if title}}
+								{{:title}}
+							{{else}}
+								No form header.  Click to set or remove.						
+							{{/if}}										
+						</div>
+						<div id='form-description' class='jq-form-description form-description'>	
+							{{if description}}
+								{{:description}}
+							{{else}}
+								<p>
+									No form description.  This is meant to be an intro paragraph describing how you want the form filled out, what will happen after you fill out the form, etc.<br />
+									<br />  
+									Click here to set the description or remove it entirely.
+								</p>
+							{{/if}}  
+						</div>
+						<div id='pagination-tabs'>										
+							<div class='jq-add-page add-page'>
+								<i class='icon-plus'></i>
+							</div>
+						</div>
+						<div id='pagination-settings'>
+							<div class='collapsed toggle jq-toggle'><i class='icon-chevron-down'></i>show settings</div>
+							<i class='icon-remove-sign jq-delete-page'></i>
+							<div class='settings jq-settings' style='display:none;'>
+								<label>Page name</label><input type='text' id='page-name' class='jq-page-name' />
+							</div>
+						</div>
+						<div id='form-builder-fields' class='element-selector-receiver no-items'>
+							
+						</div>
+						<div class='control-separator'></div>
+						<div class='buttons'>
+							<a href='#' id='save-button' class='button'><i class='icon-upload'></i><span>save</span></a>
+						</div>
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender widget-page %}
+					<div class='page{{if selected}} selected{{/if}}'>
+						{{>name}}
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender element-selector-template %}
+					<div id='element-selector'>
+						<div id='element-selector-options'>
+							<div class='form-element' data-widget-type='dfb.widgets.CheckBox' data-template-selector='#checkbox-field-template'>
+								checkbox
+							</div>
+							<div class='form-element' data-widget-type='dfb.widgets.TextBox' data-template-selector='#textbox-field-template'>
+								textbox
+							</div>
+							<div class='form-element' data-widget-type='dfb.widgets.TextArea' data-template-selector='#textarea-field-template'>
+								text area
+							</div>
+							<div class='form-element' data-widget-type='dfb.widgets.DropDown' data-template-selector='#dropdown-field-template'>
+								drop down
+							</div>
+							<div class='form-element' data-widget-type='dfb.widgets.SelectionTable' data-template-selector='#selection-table-field-template'>
+								selection table
+							</div>	
+							<div class='form-element' data-widget-type='dfb.widgets.SectionBreak' data-template-selector='#section-break-field-template'>
+								section break
+							</div>
+							<div class='form-element' data-widget-type='dfb.widgets.RadioButton' data-template-selector='#radiobutton-field-template'>
+								radio button
+							</div>										
+						</div>				
+					</div>
+				{% endjsrender %}
+				
+				<!-- form element templates follow --> 
+				
+				<!-- common elements -->
+				{% jsrender widget-common-label %}
+					<div class='jq-label label-wrap'>
+						<label {{if required}}class='required'{{/if}}><span class='jq-label-text'>{{> label }}</span><span class='required'>*</span></label>
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender widget-common-helptext %}
+					<div class='jq-help-text helptext-wrap'>
+						{{> help_text }}
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender widget-common-footer %}
+					<div class='clear-fix'></div>
+				{% endjsrender %}
+				
+				<!-- common context menu stuff -->
+				{% jsrender context-menu-common-header %}
+					<div class='context-header context-option-group'>
+						<div class='context-option'>
+							<label>type</label>
+							<select class='jq-header'>
+								<option value='dfb.widgets.CheckBox' data-template-selector='#checkbox-field-template'>Checkbox</option>
+								<option value='dfb.widgets.TextBox' data-template-selector='#textbox-field-template'>TextBox</option>
+								<option value='dfb.widgets.TextArea' data-template-selector='#textarea-field-template'>Text Area</option>
+								<option value='dfb.widgets.DropDown' data-template-selector='#dropdown-field-template'>Dropdown</option>
+								<option value='dfb.widgets.SelectionTable' data-template-selector='#selection-table-field-template'>Selection Table</option>
+								<option value='dfb.widgets.SectionBreak' data-template-selector='#section-break-field-template'>Section Break</option>
+								<option value='dfb.widgets.RadioButton' data-template-selector='#radiobutton-field-template'>Radio Button</option>					
+							</select>
+						</div>
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender context-menu-common-label %}
+					<div class='context-option-group'>
+						<div class='context-option label'>
+							<label>label</label>
+							<input type='text' class='jq-label' />
+						</div>
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender context-menu-common-default %}
+					<div class='context-option-group'>
+						<div class='context-option default'>
+							<label>default</label>
+							<input type='text' class='jq-default' />
+						</div>
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender context-menu-common-help %}
+					<div class='context-option-group'>
+						<div class='context-option help-text'>
+							<label>Help Text</label>
+							<textarea class='jq-help-text' />
+						</div>
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender context-menu-common-required %}
+					<div class='context-option required'>
+						<label>Required</label>
+						<input type='checkbox' class='jq-required' />
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender context-menu-common-size %}
+					<div class='context-option size'>
+						Size 
+						<select class='jq-size'>
+							<option value='s'>small</option>
+							<option value='m'>medium</option>
+							<option value='l'>large</option>
+						</select>
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender context-menu-content-type %}
+					<div class='context-option-group'>
+						<div class='context-option content-type'>
+							Content Type
+							<select class='jq-content-type'>
+								<option value='text'>text</option>
+								<option value='richtext'>rich text</option>
+							</select>
+						</div>
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender context-menu-option-group %}
+					{{for ~options}}
+						{{include tmpl="#context-menu-option-group-row" ~index=#index /}}
 					{{/for}}
-				</select>								
-				{{include tmpl="#widget-common-helptext" /}}
-				{{include tmpl="#widget-common-footer" /}}
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender dropdown-context-menu-template %}
-			<div class='context-menu dropdown'>
-				{{include tmpl="#context-menu-common-header" /}}
-				{{include tmpl="#context-menu-common-label" /}}
-				<div class='context-option-group jq-dropdown-options'>					
-					Options					
-					{{include tmpl="#context-menu-option-group" ~allowSelection=true ~groupName='ctx-dropdown-options' ~options=options /}}
-				</div>				
-				<div class='context-option-group'>
-					{{include tmpl="#context-menu-common-required" /}}
-					{{include tmpl="#context-menu-common-size" /}}
-				</div>				
-				{{include tmpl="#context-menu-common-help" /}}
-			</div>
-		{% endjsrender %}
-		
-		<!-- selection table -->
-		{% jsrender selection-table-field-template %}
-			<div class='widget selection-table'>
-				{{include tmpl="#widget-common-label" /}}	
-				<table class='jq-table'>
+					<div class='jq-add add-option'><i class='icon-plus-sign'></i></div>
+				{% endjsrender %}
+				
+				{% jsrender context-menu-option-group-row %}			
+					<div class='option-wrapper {{if ~allowSelection}}selectable{{/if}}'>				
+						{{if ~allowSelection}}				
+							{{if ~allowMultiple}}		
+								<input type='checkbox' value='{{:~index}}' name='{{:~groupName}}' {{if selected}}checked='checked'{{/if}} />
+							{{else}}
+								<input type='radio' value='{{:~index}}' name='{{:~groupName}}' {{if selected}}checked='checked'{{/if}} />						
+							{{/if}}
+						{{/if}}
+						<input type='text' value='{{>text}}' />
+						<div class='jq-remove remove-option' data-index='{{:~index}}'><i class='icon-remove-sign'></i></div>
+					</div>			
+				{% endjsrender %}
+				
+				<!-- widgets -->
+				{% jsrender widget-controls %}
+					<div class='controls'>
+						<div class='duplicate jq-duplicate-widget'><i class='icon-copy' /></div>				
+						<div class='remove jq-remove-widget'><i class='icon-remove-sign' /></div>						
+					</div>			
+				{% endjsrender %}
+				
+				<!-- checkbox -->
+				{% jsrender checkbox-field-template-row %}
+					<label><input type='checkbox' class='jq-input' disabled='disabled' {{if selected}}checked='checked'{{/if}} /><span>{{>text}}</span></label>
+				{% endjsrender %}
+							
+				{% jsrender checkbox-field-template %}			
+					<div class='widget checkbox'>
+						{{include tmpl="#widget-common-label" /}}
+						<div class='option-wrap'>
+							{{for options}}				
+								{{include tmpl="#checkbox-field-template-row" /}}
+							{{/for}}
+						</div>				
+						{{include tmpl="#widget-common-helptext" /}}
+						{{include tmpl="#widget-common-footer" /}}
+					</div>
+				{% endjsrender %}
+						
+				{% jsrender checkbox-context-menu-template %}
+					<div class='context-menu checkbox'>
+						{{include tmpl="#context-menu-common-header" /}}
+						{{include tmpl="#context-menu-common-label" /}}
+						<div class='context-option-group jq-checkbox-options'>					
+							Options					
+							{{include tmpl="#context-menu-option-group" ~allowSelection=true ~allowMultiple=true ~groupName='ctx-checkbox-options' ~options=options /}}
+						</div>
+						<div class='context-option-group'>
+							{{include tmpl="#context-menu-common-required" /}}					
+						</div>
+						{{include tmpl="#context-menu-common-help" /}}
+					</div>
+				{% endjsrender %}
+				
+				<!-- radio button -->
+				{% jsrender radiobutton-field-template-row %}			
+					<label><input type='radio' class='jq-input' name='radio-buttons-{{:~groupId}}' value='{{>text}}' disabled='disabled' {{if selected}}checked='checked'{{/if}} /><span>{{>text}}</span></label>
+				{% endjsrender %}
+							
+				{% jsrender radiobutton-field-template %}						
+					<div class='widget radiobutton'>			
+						{{include tmpl="#widget-common-label" /}}
+						<div class='option-wrap'>
+							{{for options}}				
+								{{include tmpl="#radiobutton-field-template-row" ~groupId=~root.uID /}}
+							{{/for}}
+						</div>				
+						{{include tmpl="#widget-common-helptext" /}}
+						{{include tmpl="#widget-common-footer" /}}
+					</div>
+				{% endjsrender %}
+						
+				{% jsrender radiobutton-context-menu-template %}
+					<div class='context-menu radiobutton'>
+						{{include tmpl="#context-menu-common-header" /}}
+						{{include tmpl="#context-menu-common-label" /}}
+						<div class='context-option-group jq-checkbox-options'>					
+							Options					
+							{{include tmpl="#context-menu-option-group" ~allowSelection=true ~allowMultiple=false ~groupName='ctx-radiobutton-options' ~options=options /}}
+						</div>
+						<div class='context-option-group'>
+							{{include tmpl="#context-menu-common-required" /}}					
+						</div>
+						{{include tmpl="#context-menu-common-help" /}}
+					</div>
+				{% endjsrender %}
+				
+				<!-- textbox -->
+				{% jsrender textbox-field-template %}
+					<div class='widget textbox'>
+						{{include tmpl="#widget-common-label" /}}				
+						<input type='text' class='jq-input jq-sizable jq-defaultable {{:size}}' data-size='{{:size}}' value='{{>default}}' disabled='disabled' />
+						{{include tmpl="#widget-common-helptext" /}}
+						{{include tmpl="#widget-common-footer" /}}
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender textbox-context-menu-template %}
+					<div class='context-menu textbox'>
+						{{include tmpl="#context-menu-common-header" /}}
+						{{include tmpl="#context-menu-common-label" /}}
+						{{include tmpl="#context-menu-common-default" /}}
+						<div class='context-option-group'>
+							{{include tmpl="#context-menu-common-required" /}}
+							{{include tmpl="#context-menu-common-size" /}}
+						</div>
+						{{include tmpl="#context-menu-common-help" /}}
+					</div>
+				{% endjsrender %}
+				
+				<!-- section break -->
+				{% jsrender section-break-field-template %}
+					<div class='widget section-break'>
+						{{include tmpl="#widget-common-label" /}}
+						{{include tmpl="#widget-common-helptext" /}}				
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender section-break-context-menu-template %}
+					<div class='context-menu section-break'>
+						{{include tmpl="#context-menu-common-header" /}}
+						{{include tmpl="#context-menu-common-label" /}}				
+						{{include tmpl="#context-menu-common-help" /}}
+					</div>
+				{% endjsrender %}
+				
+				<!-- text area -->
+				{% jsrender textarea-field-template %}
+					<div class='widget textarea'>			
+						{{include tmpl="#widget-common-label" /}}				
+						<div id='input-{{:uID}}-richtext-cover' class='richtext-cover' {{if content_type != 'richtext'}}style='display:none;'{{/if}}></div>
+						<textarea id='input-{{:uID}}' class='jq-input-handle-{{:uID}} jq-input jq-sizable jq-defaultable jq-configurable-content-type {{:size}}' {{if content_type == 'richtext'}}style='display:none;'{{/if}} data-content-type='{{:content_type}}' data-size='{{:size}}' disabled='disabled'>{{>default}}</textarea>				
+						{{include tmpl="#widget-common-helptext" /}}
+						{{include tmpl="#widget-common-footer" /}}
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender textarea-context-menu-template %}
+					<div class='context-menu textarea'>
+						{{include tmpl="#context-menu-common-header" /}}
+						{{include tmpl="#context-menu-common-label" /}}
+						{{include tmpl="#context-menu-common-default" /}}
+						<div class='context-option-group'>
+							{{include tmpl="#context-menu-common-required" /}}
+							{{include tmpl="#context-menu-common-size" /}}
+						</div>
+						{{include tmpl="#context-menu-content-type" /}}
+						{{include tmpl="#context-menu-common-help" /}}
+					</div>
+				{% endjsrender %}
+				
+				<!-- dropdown -->
+				{% jsrender dropdown-field-template %}
+					<div class='widget dropdown'>
+						{{include tmpl="#widget-common-label" /}}	
+						<select class='jq-input jq-sizable {{:size}}' data-size='{{:size}}' disabled='disabled'>
+							{{for options}}
+								<option value='{{>text}}' {{if selected}}selected='selected'{{/if}}>{{>text}}</option>
+							{{/for}}
+						</select>								
+						{{include tmpl="#widget-common-helptext" /}}
+						{{include tmpl="#widget-common-footer" /}}
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender dropdown-context-menu-template %}
+					<div class='context-menu dropdown'>
+						{{include tmpl="#context-menu-common-header" /}}
+						{{include tmpl="#context-menu-common-label" /}}
+						<div class='context-option-group jq-dropdown-options'>					
+							Options					
+							{{include tmpl="#context-menu-option-group" ~allowSelection=true ~groupName='ctx-dropdown-options' ~options=options /}}
+						</div>				
+						<div class='context-option-group'>
+							{{include tmpl="#context-menu-common-required" /}}
+							{{include tmpl="#context-menu-common-size" /}}
+						</div>				
+						{{include tmpl="#context-menu-common-help" /}}
+					</div>
+				{% endjsrender %}
+				
+				<!-- selection table -->
+				{% jsrender selection-table-field-template %}
+					<div class='widget selection-table'>
+						{{include tmpl="#widget-common-label" /}}	
+						<table class='jq-table'>
+							<tr>
+								<th></th>
+								{{for options}}
+									<th>
+										{{>text}}
+									</th>
+								{{/for}}
+							</tr>
+							{{for rows}}
+								{{include tmpl="#selection-table-row" ~index=#index ~options=~root.options /}}
+							{{/for}}
+						</table>												
+						{{include tmpl="#widget-common-helptext" /}}
+						{{include tmpl="#widget-common-footer" /}}
+					</div>
+				{% endjsrender %}
+				
+				{% jsrender selection-table-row %}
 					<tr>
-						<th></th>
-						{{for options}}
-							<th>
-								{{>text}}
-							</th>
+						<td>{{>text}}</td>
+						{{for ~options}}
+							<td data-text='{{>text}}'>
+								<input type='radio' value='{{:~index}}' {{if selected}}checked='checked'{{/if}} disabled='disabled' />
+							</td>
 						{{/for}}
 					</tr>
-					{{for rows}}
-						{{include tmpl="#selection-table-row" ~index=#index ~options=~root.options /}}
-					{{/for}}
-				</table>												
-				{{include tmpl="#widget-common-helptext" /}}
-				{{include tmpl="#widget-common-footer" /}}
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender selection-table-row %}
-			<tr>
-				<td>{{>text}}</td>
-				{{for ~options}}
-					<td data-text='{{>text}}'>
-						<input type='radio' value='{{:~index}}' {{if selected}}checked='checked'{{/if}} disabled='disabled' />
-					</td>
-				{{/for}}
-			</tr>
-		{% endjsrender %}
-		
-		{% jsrender selection-table-context-menu-template %}
-			<div class='context-menu selection-table'>
-				{{include tmpl="#context-menu-common-header" /}}
-				{{include tmpl="#context-menu-common-label" /}}	
-				<div class='context-option-group jq-row-options'>					
-					Rows							
-					{{include tmpl="#context-menu-option-group" ~allowSelection=false ~groupName='ctx-row-options' ~options=rows /}}
-				</div>
-				<div class='context-option-group jq-column-options'>					
-					Columns				
-					{{include tmpl="#context-menu-option-group" ~allowSelection=true ~groupName='ctx-column-options' ~options=options /}}
-				</div>	
-				<div class='context-option-group'>
-					{{include tmpl="#context-menu-common-required" /}}					
-				</div>			
-				{{include tmpl="#context-menu-common-help" /}}
-			</div>
-		{% endjsrender %}
-		
-		{% jsrender ui-window %}
-			<div id='dfb-ui-window-{{:window_id}}' class='ui-window {{:border_type}}'>
-				<div class='window-toolbar'>
-					<div class='window-dismiss'></div>
-				</div>				
-				<div class='window-content'>
-					{{:content}}
-				</div>
-				{{if show_buttons}}
-					<div class='window-buttons'>
-						<a href='#' class='button jq-yes'>yes</a>
-						<a href='#' class='button red jq-no'>no</a>
+				{% endjsrender %}
+				
+				{% jsrender selection-table-context-menu-template %}
+					<div class='context-menu selection-table'>
+						{{include tmpl="#context-menu-common-header" /}}
+						{{include tmpl="#context-menu-common-label" /}}	
+						<div class='context-option-group jq-row-options'>					
+							Rows							
+							{{include tmpl="#context-menu-option-group" ~allowSelection=false ~groupName='ctx-row-options' ~options=rows /}}
+						</div>
+						<div class='context-option-group jq-column-options'>					
+							Columns				
+							{{include tmpl="#context-menu-option-group" ~allowSelection=true ~groupName='ctx-column-options' ~options=options /}}
+						</div>	
+						<div class='context-option-group'>
+							{{include tmpl="#context-menu-common-required" /}}					
+						</div>			
+						{{include tmpl="#context-menu-common-help" /}}
 					</div>
-				{{/if}}
+				{% endjsrender %}
+				
+				{% jsrender ui-window %}
+					<div id='dfb-ui-window-{{:window_id}}' class='ui-window {{:border_type}}'>						
+						<i class='window-dismiss icon-remove-sign'></i>
+						
+						<div class='window-content'>
+							{{:content}}
+						</div>
+						{{if show_buttons}}
+							<div class='window-buttons'>
+								<a href='#' class='button jq-yes'>yes</a>
+								<a href='#' class='button red jq-no'>no</a>
+							</div>
+						{{/if}}
+					</div>
+				{% endjsrender %}
 			</div>
-		{% endjsrender %}
-		
+		</div>	
 {% endblock %}

@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response, HttpResponse, Http404, redirect, get_object_or_404
 from django.conf import settings
 from django.template import RequestContext
+from django.views.decorators.csrf import ensure_csrf_cookie
 import models
 import util
 import json
@@ -15,6 +16,7 @@ except AttributeError:
 def home(request):
     return render_to_response('django_form_architect/index.html', locals(), context_instance=RequestContext(request))
 
+@ensure_csrf_cookie
 def build(request, id=None):     
     if request.POST:        
         form_dict = json.loads(request.POST.get('form'))
@@ -41,7 +43,10 @@ def build(request, id=None):
                         page_map[page.sequence]['widgets'][widget.sequence] = widget.pid                    
                         widget_pids.append(widget.pid)                
                 
-        for unused_page in (p for p in form.page_set.all() if p.pid not in page_pids):            
+        for unused_page in (p for p in form.page_set.all() if p.pid not in page_pids):
+            for widget in unused_page.widget_set.all():
+                widget.page = None
+                widget.save()            
             unused_page.delete()
         
         for unused_widget in (w for w in form.widget_set.all() if w.pid not in widget_pids):

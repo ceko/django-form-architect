@@ -20,7 +20,8 @@ object.""",
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'django-polymorphic'
+          'django-polymorphic',
+          'django >= 1.5.1'
       ],
       entry_points="""
       # -*- Entry points: -*-

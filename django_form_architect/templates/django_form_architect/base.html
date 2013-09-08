@@ -3,19 +3,26 @@
 	<head>
 		<title>{% block title %}Django Form Architect{% endblock %}</title>
 		<link href='{{ STATIC_URL }}django_form_architect/css/base.css' rel='stylesheet' type='text/css' media='screen' />
+		<link href='{{ STATIC_URL }}django_form_architect/css/font-awesome.css' rel='stylesheet' type='text/css' media='screen' />
 	</head>
 	<body>		
 		<div id='main-container'>
 			<div id='nav-wrapper'>
 				<ul id='nav'>
-					<li><a href='{% url dfa-home %}'>home</a></li>
-					<li><a href='{% url dfa-new %}'>new form</a></li>
+					<li><a href='{% url 'django_form_architect.views.home' %}'><i class='icon-home'></i>home</a></li>
+					<li><a href='{% url 'django_form_architect.views.build' %}'><i class='icon-plus'></i>new form</a></li>
 				</ul>
 				<div style='clear:both;'></div>				
 			</div>
-			<div id='main-content' class='left-gutter'>
+			<div id='main-content'>				
 				{% block content %}
 				{% endblock %}
+			</div>
+			<div id='footer-wrap'>
+				<div id='footer'>
+					footer stuff<br />
+					footer stuff
+				</div>
 			</div>
 		</div> 
 		
