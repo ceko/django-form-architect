@@ -161,12 +161,12 @@ a.button:active {
 }
 
 #main-content .gutter-outer-border {
-	border-left:10px solid #1BA1E2;
+	border-left:10px solid #666;
 	border-right:1px solid #D4D4D4;	
 }
 
 #main-content .gutter-inner-border {
-	border-left: 350px solid #BBE3F7;
+	border-left: 350px solid #999;
 	padding-bottom:50px;	
 }
 
@@ -174,6 +174,7 @@ a.button:active {
 	height:100%;	
 	float:left;		
 	margin-left:-350px;
+	width:350px;
 }
 
 #main-content .main-column {	
@@ -187,18 +188,36 @@ a.button:active {
 
 #footer {
 	max-width:1000px;
-	margin:auto;	
+	margin:auto;
+	padding-top:20px;	
+}
+
+#footer .branding {
+	font-size:30px;
 }
 
 /*form building*/
 
-#context-menu {		
-	position:relative;	
+#context-menu-header {
+	background:#1BA1E2;
+}
+
+#context-menu-container, #element-selector-container {		
+	position:relative;
+	margin-left:-10px;	
+}
+
+#context-menu {
+	box-shadow: inset 10px 0px #1ba1e2;
+	background: #BBE3F7;
+}
+
+#context-menu .slide-wrap {
+	display:none;
 }
 
 #context-menu .slide {
-	width: 360px;
-	margin-left:-10px;	
+	width: 360px;		
 	min-height: 200px;
 	background: #1BA1E2;
 	display:none;	
@@ -453,11 +472,20 @@ input[type=radio], input[type=checkbox] {
 	box-shadow:none;
 }
 
-#form-builder-fields.no-items {
-	margin:20px;
-	border:3px dashed #666;
-	height:50px;
-	padding-bottom:0px;
+#form-builder-fields:empty {	
+	border-bottom:1px solid #D4D4D4;	
+    height:50px;
+    padding-bottom:0px;
+    margin-bottom:51px;
+    text-align:center;    
+}
+
+#form-builder-fields:empty:after {
+    content:'drop form fields here to get started';
+    font-size:22px;
+    color:#999;
+    position:relative;
+    top:10px;
 }
 
 #form-builder .buttons {
@@ -677,14 +705,22 @@ input[type=radio], input[type=checkbox] {
 	margin-top:-20px;
 }
 
+.accordian-header {
+	padding:15px;
+	cursor:pointer;
+}
+
  /** element selector **/
-#element-selector {
-	position:fixed;
-	top:100px;
-	background:#FFF;
-	border:1px solid red;
-	display:none;
-	width:150px;
+ #element-selector-header {
+ 	background:#A05000;
+ }
+ 
+#element-selector-options {
+	display:none;	
+	box-shadow: inset 10px 0px #A05000;
+	background: #FEF7E0;
+	color:#444;
+	padding:10px 20px;
 }
 
 .cloned-form-element {
@@ -703,39 +739,46 @@ input[type=radio], input[type=checkbox] {
 }
 
 .editable-text .editable-text-controls {
-	position:absolute;
-	width:100px;
-	left:-105px;	
-	font-size:16px;	
-	font-weight:normal;
-	border-radius:3px;	
-	background:#FFF;
+	position: absolute;	
+	left: 15px;
+	font-weight: normal;
+	background: #333;
+	bottom: -50px;
+	z-index: 10;
+    font-size:14px;
+    color:#FFF;
 }
 
-.editable-text .editable-text-controls div {
+.editable-text .editable-text-controls .save, .editable-text .editable-text-controls .cancel {
 	cursor:pointer;
-	padding:0px 10px;
-	margin:5px 0px;
+	padding:5px 10px;
+	margin:10px;
+	display:inline-block;
 }
 
-.editable-text .editable-text-controls div:hover {
-	cursor:pointer;
-	padding:0px 10px;
-	margin-top:5px;
-	background:#FFE;
+.editable-text-controls .arrow {
+    position: absolute;
+    left: 40%;
+    top: -20px;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #333;
+    z-index: 50;
 }
 
 .editable-text-controls .save {	
-	border-bottom:1px solid #DDD;
-	padding-bottom:5px !important;
+	background:#339933;    
+    margin-right:0px !important;
 }
 
 .editable-text-controls .cancel {
-	padding: 5px;		
+	background:#E51400;	
 }
 
-.editable-text-hover {
-	border: 1px dashed #AAA !important;
+.editable-text-hover {	
 	background: #FFE;
 	cursor:pointer;
 }

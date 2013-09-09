@@ -120,8 +120,8 @@ dfb.ContextMenu = function() {
 		this.$slide			
 			.show()
 			.find('.jq-slide-content')
-			.html($menu);
-		this.positionMenuAtActive();
+			.html($menu);		
+		dfb_globals.left_menu_accordian.showByTag('context-menu', this.positionMenuAtActive.bind(this))		
 		return this;
 	}
 	
@@ -137,7 +137,8 @@ dfb.ContextMenu = function() {
 	
 	this.positionMenuAtActive = function(suppress_animation) {
 		if(this.active_object) {
-			this.positionMenuAt(this.active_object.getElement().closest('.widget-wrap').position().top+20, suppress_animation);
+			var $ctx_menu_header = $('#context-menu-header');
+			this.positionMenuAt(this.active_object.getElement().closest('.widget-wrap').position().top+20-$ctx_menu_header.offset().top + $ctx_menu_header.height(), suppress_animation);
 		}
 	}
 	
@@ -235,7 +236,7 @@ dfb.FormBuilder = function(options) {
 		this.$html.find('#pagination-tabs div.jq-add-page').on('click', function() {			
 			var page = dfb_globals.builder.addPage({
 				pid: null,
-				name: 'New Page',
+				name: 'new page',
 				selected: false
 			});
 		});	
@@ -1231,7 +1232,62 @@ dfb.ui = {
 	},
 	hideDialogOverlay: function() {
 		this.$dialog_overlay.fadeOut('fast');
-	}
+	}	
+};
+
+dfb.ui.AccordianGroup = function(options) {
+	var settings = $.extend({}, {
+		animation_type: 'slide_down',	
+		members: [],		
+	}, options);	
+	var $focused_member = null;
+	var on_show = [];
+	
+	var init = function() {
+		var _this = this;
+		$.each(settings.members, function() {
+			$(this).click(function() { _this.showMember($(this)) });
+		});
+	};
+	
+	var runOnShows = function(tag) {
+		$.each(on_show, function() {
+			if(this.tag == tag) {
+				this.func();
+			}
+		});
+	};
+	
+	this.showMember = function($member, on_completion) {
+		if($focused_member && $member.get(0) === $focused_member.get(0)) {
+			if(on_completion) {
+				on_completion();				
+			}
+			runOnShows();
+			return;
+		}
+		
+		$.each(settings.members, function() {
+			$($(this).data().accordianContentSelector).slideUp('fast');
+		});
+		$($member.data().accordianContentSelector).slideDown('fast', function() { if(on_completion) on_completion(); runOnShows($member.data().tag); });
+		$focused_member = $member;
+	};
+	
+	this.showByTag = function(tag, on_completion) {
+		var $member = $(settings.members).filter(function() {
+			return $(this).data().tag == tag;
+		});
+		this.showMember($member.get(0), on_completion);
+	};
+	
+	this.onShow = function(tag, on_show_func) {
+		on_show.push({tag: tag, func: on_show_func});
+	};
+	
+	(function() {
+		init.apply(this);
+	}).apply(this);
 };
 
 dfb.ui.Window = function(options) {	
@@ -1269,10 +1325,12 @@ dfb.ui.Window = function(options) {
 				$window.find('.jq-yes').on('click', function() {
 					settings.yes.call(_this);
 					_this.remove();
+					return false;
 				});
 				$window.find('.jq-no').on('click', function() {
 					settings.no.call(_this);
 					_this.remove();
+					return false;
 				});
 				break;
 			default:
@@ -1347,7 +1405,7 @@ dfb.ui.Window.showYesNoDialog = function(options) {
 			.bind('mouseover', function(evt) {
 				_this.$element.addClass('editable-text-hover');
 				/* hide other save/cancel controls */
-				$('.editable-text-controls').hide();
+				//$('.editable-text-controls').hide();
 				_this.$element.find('.editable-text-controls').show();
 			})
 			.bind('mouseout', function(evt) {
@@ -1381,7 +1439,7 @@ dfb.ui.Window.showYesNoDialog = function(options) {
 				}
 			});
 		
-		var $editor_controls = $("<div class='editable-text-controls'><div class='save'>save</div><div class='cancel'>cancel</div></div>");
+		var $editor_controls = $("<div class='editable-text-controls'><div class='arrow'></div><div class='save'>save</div><div class='cancel'>cancel</div></div>");
 		$editor_controls.find('.save')
 			.click(function(evt) {
 				_this.confirmEdit();

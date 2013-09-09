@@ -14,11 +14,17 @@
 			dfb_globals.context_menu = new dfb.ContextMenu();
 			dfb_globals.builder = new dfb.FormBuilder({% if form %}{{form.json_serialize|safe}}{% endif %});
 			dfb_globals.element_selector = new dfb.ElementSelector();
-									
+						
 			$('#context-menu-container').html(dfb_globals.context_menu.render('#context-menu-template'));
 			$('#form-builder-container').html(dfb_globals.builder.render('#form-builder-template'));
 			$('#element-selector-container').html(dfb_globals.element_selector.render('#element-selector-template'));
-			
+			dfb_globals.left_menu_accordian = new dfb.ui.AccordianGroup({
+				members: [$('#context-menu-header'), $('#element-selector-header')],
+			});
+			dfb_globals.left_menu_accordian.onShow('context-menu', function() {
+				dfb_globals.context_menu.positionMenuAtActive();
+			});
+			dfb_globals.left_menu_accordian.showByTag('element-selector');
 			var widget = null;
 			
 			var first_page = null;
@@ -29,12 +35,12 @@
 					first_page = page;				
 				{% endif %}
 				{% for widget in page.active_widgets %}
-					dfb_globals.builder.addWidget('dfb.widgets.{{widget.short_type}}', '#{{widget.default_template}}', {{widget.json_serialize|safe}}).showContextMenu();
+					dfb_globals.builder.addWidget('dfb.widgets.{{widget.short_type}}', '#{{widget.default_template}}', {{widget.json_serialize|safe}});
 				{% endfor %}
 			{% empty %}
 				var page = dfb_globals.builder.addPage({
 					pid: null,
-					name: 'Page 1',
+					name: 'page 1',
 					selected: true
 				});
 				first_page = page;
@@ -49,14 +55,14 @@
 	<div class='gutter-outer-border'>
 		<div class='gutter-inner-border'>
 			<div class='wide-column'>
+				<div id='element-selector-container'>		
+				</div>				
 				<div id='context-menu-container'>		
 				</div>
 			</div>
 			<div class='main-column'>
 				<div id='form-builder-container'>		
-				</div>
-				<div id='element-selector-container'>		
-				</div>		
+				</div>						
 			</div>
 			
 			<div style='clear:both;'></div>
@@ -64,9 +70,14 @@
 				<!-- pretty much all the work is done by javascript templates below -->
 				{% jsrender context-menu-template %}
 					<div id='context-menu'>
-						<div class='slide jq-slide'>
-							<div class='right-arrow'></div>
-							<div class='jq-slide-content'></div>
+						<div id='context-menu-header' class='accordian-header' data-tag='context-menu' data-accordian-content-selector='#context-menu .slide-wrap'>
+							context menu 
+						</div>
+						<div class='slide-wrap'>
+							<div class='slide jq-slide'>
+								<div class='right-arrow'></div>
+								<div class='jq-slide-content'></div>
+							</div>
 						</div>
 					</div>
 				{% endjsrender %}
@@ -105,9 +116,7 @@
 								<label>Page name</label><input type='text' id='page-name' class='jq-page-name' />
 							</div>
 						</div>
-						<div id='form-builder-fields' class='element-selector-receiver no-items'>
-							
-						</div>
+						<div id='form-builder-fields' class='element-selector-receiver'></div>
 						<div class='control-separator'></div>
 						<div class='buttons'>
 							<a href='#' id='save-button' class='button'><i class='icon-upload'></i><span>save</span></a>
@@ -123,6 +132,9 @@
 				
 				{% jsrender element-selector-template %}
 					<div id='element-selector'>
+						<div id='element-selector-header' class='accordian-header' data-tag='element-selector' data-accordian-content-selector='#element-selector-options'>
+							add a form field 
+						</div>
 						<div id='element-selector-options'>
 							<div class='form-element' data-widget-type='dfb.widgets.CheckBox' data-template-selector='#checkbox-field-template'>
 								checkbox
