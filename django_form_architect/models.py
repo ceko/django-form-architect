@@ -68,6 +68,10 @@ class Widget(PolymorphicModel):
     page = models.ForeignKey(Page, null=True, default=None)
     is_active = models.BooleanField(default=True)
     
+    @property
+    def class_name(self):
+        return self.__class__.__name__
+    
     def to_dict(self):
         return {
             'pid': self.pid,
@@ -123,12 +127,6 @@ class TextBoxWidget(Widget):
     default = models.CharField(max_length=100, null=True)
     size = models.CharField(max_length=1, choices=SIZES)
     
-    def short_type(self):
-        return 'TextBox'
-    
-    def default_template(self):
-        return 'textbox-field-template'
-    
     def from_dict(self, dict, *args, **kwargs):        
         super(TextBoxWidget, self).from_dict(dict)
         self.default = dict.get('default', None)
@@ -159,12 +157,6 @@ class TextAreaWidget(Widget):
     size = models.CharField(max_length=1, choices=SIZES)
     content_type = models.CharField(max_length=10, choices=CONTENT_TYPES)
     
-    def short_type(self):
-        return 'TextArea'
-    
-    def default_template(self):
-        return 'textarea-field-template'
-    
     def from_dict(self, dict, *args, **kwargs):
         super(TextAreaWidget, self).from_dict(dict)
         self.default = dict.get('default', None)
@@ -185,12 +177,6 @@ class CheckBoxWidget(Widget):
     @property
     def options(self):
         return self.widgetoption_set
-    
-    def short_type(self):
-        return 'CheckBox'
-    
-    def default_template(self):
-        return 'checkbox-field-template'
     
     def from_dict(self, dict, *args, **kwargs):
         super(CheckBoxWidget, self).from_dict(dict)
@@ -227,12 +213,6 @@ class DropDownWidget(Widget):
     @property
     def options(self):
         return self.widgetoption_set
-    
-    def short_type(self):
-        return 'DropDown'
-    
-    def default_template(self):
-        return 'dropdown-field-template'
     
     def from_dict(self, dict, *args, **kwargs):
         super(DropDownWidget, self).from_dict(dict)
@@ -273,12 +253,6 @@ class SelectionTableWidget(Widget):
     def columns(self):
         return self.options.filter(selection_group='options')
     
-    def short_type(self):
-        return 'SelectionTable'
-    
-    def default_template(self):
-        return 'selection-table-field-template'
-    
     def from_dict(self, dict, *args, **kwargs):
         super(SelectionTableWidget, self).from_dict(dict)
                 
@@ -308,12 +282,7 @@ class SelectionTableWidget(Widget):
         
         return json.dumps(dict) 
 
-class SectionBreakWidget(Widget):
-    def short_type(self):
-        return 'SectionBreak'
-    
-    def default_template(self):
-        return 'section-break-field-template'
+class SectionBreakWidget(Widget):    
     
     def from_dict(self, dict, *args, **kwargs):        
         super(SectionBreakWidget, self).from_dict(dict)
@@ -326,12 +295,6 @@ class RadioButtonWidget(Widget):
     @property
     def options(self):
         return self.widgetoption_set
-    
-    def short_type(self):
-        return 'RadioButton'
-    
-    def default_template(self):
-        return 'radiobutton-field-template'
     
     def from_dict(self, dict, *args, **kwargs):
         super(RadioButtonWidget, self).from_dict(dict)
@@ -355,4 +318,24 @@ class RadioButtonWidget(Widget):
         })
         
         return json.dumps(dict) 
+    
+class PhoneNumberWidget(Widget):
+    
+    default = models.CharField(max_length=100, null=True)
+    mask = models.CharField(max_length=50)
+    
+    def from_dict(self, dict, *args, **kwargs):        
+        super(PhoneNumberWidget, self).from_dict(dict)
+        self.default = dict.get('default', None)
+        self.mask = dict.get('mask', None)
+                
+    def json_serialize(self):        
+        dict = super(PhoneNumberWidget, self).to_dict()
+        dict.update({
+            'default': self.default,
+            'mask': self.mask
+        })
+        
+        return json.dumps(dict)
+    
     

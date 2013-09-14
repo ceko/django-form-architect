@@ -1,0 +1,16 @@
+{% load jsrender %}
+
+{% jsrender dfb-widgets-sectionbreak %}
+	<div class='widget section-break'>
+		{{include tmpl="#widget-common-label" /}}
+		{{include tmpl="#widget-common-helptext" /}}				
+	</div>
+{% endjsrender %}
+
+{% jsrender section-break-context-menu-template %}
+	<div class='context-menu section-break'>
+		{{include tmpl="#context-menu-common-header" /}}
+		{{include tmpl="#context-menu-common-label" /}}				
+		{{include tmpl="#context-menu-common-help" /}}
+	</div>
+{% endjsrender %}

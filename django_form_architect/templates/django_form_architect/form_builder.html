@@ -1,0 +1,299 @@
+{% extends 'django_form_architect/base.html' %}
+{% load jsrender %}
+
+{% block javascript %}
+	{{ block.super }}
+	<script src='{{ STATIC_URL }}django_form_architect/js/tinymce/tinymce.min.js'></script>
+	<script src='{{ STATIC_URL }}django_form_architect/js/jsrender.min.js'></script>
+	<script src='{{ STATIC_URL }}django_form_architect/js/jquery.maskedinput.min.js'></script>
+	<script src='{{ STATIC_URL }}django_form_architect/js/utility.js'></script>
+	<script src='{{ STATIC_URL }}django_form_architect/js/ui.js'></script>
+	<script src='{{ STATIC_URL }}django_form_architect/js/form-builder.js'></script>
+	
+	{% for key, widget in widget_descriptors.items %}
+		<script src='{{ widget.builder_js }}'></script>
+	{% endfor %}
+	
+	<script>
+		$(function() {
+			window.dfb_globals = {};
+			
+			dfb_globals.context_menu = new dfb.ContextMenu();
+			dfb_globals.builder = new dfb.FormBuilder({% if form %}{{form.json_serialize|safe}}{% endif %});
+			dfb_globals.element_selector = new dfb.ElementSelector();
+						
+			{% for key, widget in widget_descriptors.items %}
+				dfb.WidgetTypes.add('{{key}}', new dfb.WidgetType({					
+					name: '{{widget.name}}',
+					klass: '{{widget.js_klass}}'				
+				}));
+			{% endfor %}
+			
+			$('#context-menu-container').html(dfb_globals.context_menu.render('#context-menu-template'));
+			$('#form-builder-container').html(dfb_globals.builder.render('#form-builder-template'));
+			$('#element-selector-container').html(dfb_globals.element_selector.render('#element-selector-template'));
+			dfb_globals.left_menu_accordian = new dfb.ui.AccordianGroup({
+				members: [$('#context-menu-header'), $('#element-selector-header')],
+			});
+			dfb_globals.left_menu_accordian.onShow('context-menu', function() {
+				dfb_globals.context_menu.positionMenuAtActive();
+			});
+			dfb_globals.left_menu_accordian.showByTag('element-selector');
+			var widget = null;
+			
+			var first_page = null;
+			{% for page in form.page_set.all %}
+				var page = dfb_globals.builder.addPage({{page.json_serialize|safe}});								
+				page.showPage();	
+				{%if forloop.first %}
+					first_page = page;				
+				{% endif %}
+				{% for widget in page.active_widgets %}
+					dfb_globals.builder.addWidget(dfb.WidgetTypes.get('{{widget.class_name}}').settings.klass, dfb.WidgetTypes.get('{{widget.class_name}}').settings.template, {{widget.json_serialize|safe}});
+				{% endfor %}
+			{% empty %}
+				var page = dfb_globals.builder.addPage({
+					pid: null,
+					name: 'page 1',
+					selected: true
+				});
+				first_page = page;
+			{% endfor %}				
+			first_page.showPage();
+			
+		});
+	</script>
+{% endblock %}
+
+{% block content %}
+	<div class='wide-column'>
+		<div id='element-selector-container'>		
+		</div>				
+		<div id='context-menu-container'>		
+		</div>
+	</div>
+	<div class='main-column formbuilder'>
+		<div id='form-builder-container'>		
+		</div>						
+	</div>
+	
+	<div style='clear:both;'></div>
+	
+		<!-- pretty much all the work is done by javascript templates below -->
+		{% jsrender context-menu-template %}
+			<div id='context-menu'>
+				<div id='context-menu-header' class='accordian-header' data-tag='context-menu' data-accordian-content-selector='#context-menu .slide-wrap'>
+					context menu 
+				</div>
+				<div class='slide-wrap'>
+					<div class='slide jq-slide'>
+						<div class='right-arrow'></div>
+						<div class='jq-slide-content'></div>
+					</div>
+				</div>
+			</div>
+		{% endjsrender %}
+		
+		
+		{% jsrender form-builder-template %}
+			<div id='form-builder'>
+				<input id='form-pid' type='hidden' value='{{:pid}}' />
+				<div id='form-title' class='jq-form-title form-title'>	
+					{{if title}}
+						{{:title}}
+					{{else}}
+						No form header.  Click to set or remove.						
+					{{/if}}										
+				</div>
+				<div id='form-description' class='jq-form-description form-description'>	
+					{{if description}}
+						{{:description}}
+					{{else}}
+						<p>
+							No form description.  This is meant to be an intro paragraph describing how you want the form filled out, what will happen after you fill out the form, etc.<br />
+							<br />  
+							Click here to set the description or remove it entirely.
+						</p>
+					{{/if}}  
+				</div>
+				<div id='pagination-tabs'>										
+					<div class='jq-add-page add-page'>
+						<i class='icon-plus'></i>
+					</div>
+				</div>
+				<div id='pagination-settings'>
+					<div class='collapsed toggle jq-toggle'><i class='icon-chevron-down'></i>show settings</div>
+					<i class='icon-remove-sign jq-delete-page'></i>
+					<div class='settings jq-settings' style='display:none;'>
+						<label>Page name</label><input type='text' id='page-name' class='jq-page-name' />
+					</div>
+				</div>
+				<div id='form-builder-fields' class='element-selector-receiver'></div>
+				<div class='control-separator'></div>
+				<div class='buttons'>
+					<a href='#' id='save-button' class='button'><i class='icon-upload'></i><span>save</span></a>
+				</div>
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender widget-page %}
+			<div class='page{{if selected}} selected{{/if}}'>
+				{{>name}}
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender element-selector-template %}
+			<div id='element-selector'>
+				<div id='element-selector-header' class='accordian-header' data-tag='element-selector' data-accordian-content-selector='#element-selector-options'>
+					add a form field 
+				</div>
+				<div id='element-selector-options'>
+					{{for ~getWidgetTypes()}}						
+						<div class='form-element {{:settings.klass}}' data-widget-type='{{:settings.klass}}' data-template-selector='{{:settings.template}}'>
+							{{:settings.name}}
+						</div>
+					{{/for}}																			
+				</div>				
+			</div>
+		{% endjsrender %}
+		
+		<!-- form element templates follow --> 
+		
+		<!-- common elements -->
+		{% jsrender widget-common-label %}
+			<div class='jq-label label-wrap'>
+				<label {{if required}}class='required'{{/if}}><span class='jq-label-text'>{{> label }}</span><span class='required'>*</span></label>
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender widget-common-helptext %}
+			<div class='jq-help-text helptext-wrap'>
+				{{> help_text }}
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender widget-common-footer %}
+			<div class='clear-fix'></div>
+		{% endjsrender %}
+		
+		<!-- common context menu stuff -->
+		{% jsrender context-menu-common-header %}
+			<div class='context-header context-option-group'>
+				<div class='context-option'>
+					<label>type</label>
+					<select class='jq-header'>
+						{{for ~getWidgetTypes()}}
+							<option value='{{:settings.klass}}' data-template-selector='{{:settings.template}}'>{{:settings.name}}</option>							
+						{{/for}}											
+					</select>
+				</div>
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender context-menu-common-label %}
+			<div class='context-option-group'>
+				<div class='context-option label'>
+					<label>label</label>
+					<input type='text' class='jq-label' />
+				</div>
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender context-menu-common-default %}
+			<div class='context-option-group'>
+				<div class='context-option default'>
+					<label>default</label>
+					<input type='text' class='jq-default' />
+				</div>
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender context-menu-common-help %}
+			<div class='context-option-group'>
+				<div class='context-option help-text'>
+					<label>Help Text</label>
+					<textarea class='jq-help-text' />
+				</div>
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender context-menu-common-required %}
+			<div class='context-option required'>
+				<label>Required</label>
+				<input type='checkbox' class='jq-required' />
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender context-menu-common-size %}
+			<div class='context-option size'>
+				Size 
+				<select class='jq-size'>
+					<option value='s'>small</option>
+					<option value='m'>medium</option>
+					<option value='l'>large</option>
+				</select>
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender context-menu-content-type %}
+			<div class='context-option-group'>
+				<div class='context-option content-type'>
+					Content Type
+					<select class='jq-content-type'>
+						<option value='text'>text</option>
+						<option value='richtext'>rich text</option>
+					</select>
+				</div>
+			</div>
+		{% endjsrender %}
+		
+		{% jsrender context-menu-option-group %}
+			{{for ~options}}
+				{{include tmpl="#context-menu-option-group-row" ~index=#index /}}
+			{{/for}}
+			<div class='jq-add add-option'><i class='icon-plus-sign'></i></div>
+		{% endjsrender %}
+		
+		{% jsrender context-menu-option-group-row %}			
+			<div class='option-wrapper {{if ~allowSelection}}selectable{{/if}}'>				
+				{{if ~allowSelection}}				
+					{{if ~allowMultiple}}		
+						<input type='checkbox' value='{{:~index}}' name='{{:~groupName}}' {{if selected}}checked='checked'{{/if}} />
+					{{else}}
+						<input type='radio' value='{{:~index}}' name='{{:~groupName}}' {{if selected}}checked='checked'{{/if}} />						
+					{{/if}}
+				{{/if}}
+				<input type='text' value='{{>text}}' />
+				<div class='jq-remove remove-option' data-index='{{:~index}}'><i class='icon-remove-sign'></i></div>
+			</div>			
+		{% endjsrender %}
+		
+		<!-- widget shared -->
+		{% jsrender widget-controls %}
+			<div class='controls'>
+				<div class='duplicate jq-duplicate-widget'><i class='icon-copy' /></div>				
+				<div class='remove jq-remove-widget'><i class='icon-remove-sign' /></div>						
+			</div>			
+		{% endjsrender %}
+		
+		{% jsrender ui-window %}
+			<div id='dfb-ui-window-{{:window_id}}' class='ui-window {{:border_type}}'>						
+				<i class='window-dismiss icon-remove-sign'></i>
+				
+				<div class='window-content'>
+					{{:content}}
+				</div>
+				{{if show_buttons}}
+					<div class='window-buttons'>
+						<a href='#' class='button jq-yes'>yes</a>
+						<a href='#' class='button red jq-no'>no</a>
+					</div>
+				{{/if}}
+			</div>
+		{% endjsrender %}
+		
+		{% for key, widget in widget_descriptors.items %}
+			{% include widget.builder_template_path %}
+		{% endfor %}
+					
+{% endblock %}

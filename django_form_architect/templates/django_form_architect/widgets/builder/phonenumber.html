@@ -1,0 +1,32 @@
+{% load jsrender %}
+
+{% jsrender dfb-widgets-phonenumber %}
+	<div class='widget textbox'>
+		{{include tmpl="#widget-common-label" /}}				
+		<input type='text' class='jq-input jq-sizable jq-defaultable {{:size}}' data-mask='{{:mask}}' data-size='{{:size}}' value='{{>default}}' disabled='disabled' />
+		{{include tmpl="#widget-common-helptext" /}}
+		{{include tmpl="#widget-common-footer" /}}
+	</div>
+{% endjsrender %}
+
+{% jsrender phonenumber-context-menu-template %}
+	<div class='context-menu textbox'>
+		{{include tmpl="#context-menu-common-header" /}}
+		{{include tmpl="#context-menu-common-label" /}}
+		<div class='context-option-group'>
+			<div class='context-option mask'>
+				<label>mask</label>
+				<select class='mask jq-mask'>
+					<option value="(999)-999-9999">(123)-456-7890</option>
+					<option value="999-9999">123-4567</option>
+					<option value="">no mask</option>
+				</select>
+			</div>
+		</div>
+		{{include tmpl="#context-menu-common-default" /}}
+		<div class='context-option-group'>
+			{{include tmpl="#context-menu-common-required" /}}			
+		</div>
+		{{include tmpl="#context-menu-common-help" /}}
+	</div>
+{% endjsrender %}

@@ -1,0 +1,23 @@
+{% load jsrender %}
+
+{% jsrender dfb-widgets-textbox %}
+	<div class='widget textbox'>
+		{{include tmpl="#widget-common-label" /}}				
+		<input type='text' class='jq-input jq-sizable jq-defaultable {{:size}}' data-size='{{:size}}' value='{{>default}}' disabled='disabled' />
+		{{include tmpl="#widget-common-helptext" /}}
+		{{include tmpl="#widget-common-footer" /}}
+	</div>
+{% endjsrender %}
+
+{% jsrender textbox-context-menu-template %}
+	<div class='context-menu textbox'>
+		{{include tmpl="#context-menu-common-header" /}}
+		{{include tmpl="#context-menu-common-label" /}}
+		{{include tmpl="#context-menu-common-default" /}}
+		<div class='context-option-group'>
+			{{include tmpl="#context-menu-common-required" /}}
+			{{include tmpl="#context-menu-common-size" /}}
+		</div>
+		{{include tmpl="#context-menu-common-help" /}}
+	</div>
+{% endjsrender %}

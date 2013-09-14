@@ -1,0 +1,30 @@
+{% load jsrender %}
+
+{% jsrender dfb-widgets-dropdown %}
+	<div class='widget dropdown'>
+		{{include tmpl="#widget-common-label" /}}	
+		<select class='jq-input jq-sizable {{:size}}' data-size='{{:size}}' disabled='disabled'>
+			{{for options}}
+				<option value='{{>text}}' {{if selected}}selected='selected'{{/if}}>{{>text}}</option>
+			{{/for}}
+		</select>								
+		{{include tmpl="#widget-common-helptext" /}}
+		{{include tmpl="#widget-common-footer" /}}
+	</div>
+{% endjsrender %}
+
+{% jsrender dropdown-context-menu-template %}
+	<div class='context-menu dropdown'>
+		{{include tmpl="#context-menu-common-header" /}}
+		{{include tmpl="#context-menu-common-label" /}}
+		<div class='context-option-group jq-dropdown-options'>					
+			Options					
+			{{include tmpl="#context-menu-option-group" ~allowSelection=true ~groupName='ctx-dropdown-options' ~options=options /}}
+		</div>				
+		<div class='context-option-group'>
+			{{include tmpl="#context-menu-common-required" /}}
+			{{include tmpl="#context-menu-common-size" /}}
+		</div>				
+		{{include tmpl="#context-menu-common-help" /}}
+	</div>
+{% endjsrender %}

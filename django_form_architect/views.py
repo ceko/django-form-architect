@@ -5,12 +5,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 import models
 import util
 import json
+import settings
 from operator import attrgetter
-
-try:
-    ERRORPAGE_SUITE_KEY = settings.ERRORPAGE_SUITE_KEY
-except AttributeError:
-    ERRORPAGE_SUITE_KEY = 'one_hundred_apples' 
 
 
 def home(request):
@@ -26,16 +22,17 @@ def build(request, id=None):
         page_map = {}
         widget_pids = []    
         page_pids = []
-            
+        
         for page_dict in page_request:
             page = util.PageModelFactory.from_dict(page_dict, form)
-            page_map[page.sequence] = {
-                'pid': page.pid,
-                'widgets': {},
-            }
+            
             if len(page_dict.get('widgets', [])) == 0:                
                 page.delete()
             else:
+                page_map[page.sequence] = {
+                    'pid': page.pid,
+                    'widgets': {},
+                }
                 page_pids.append(page.pid)
                 for widget_dict in page_dict.get('widgets', []):
                     widget = util.WidgetModelFactory.from_dict(widget_dict, form=form, page=page)
@@ -61,5 +58,6 @@ def build(request, id=None):
         
     if id:        
         form = get_object_or_404(models.Form.objects, pid=id)        
-        
-    return render_to_response('django_form_architect/new.html', locals(), context_instance=RequestContext(request))
+    
+    widget_descriptors = settings.BUILTIN_WIDGETS    
+    return render_to_response('django_form_architect/form_builder.html', locals(), context_instance=RequestContext(request))

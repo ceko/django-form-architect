@@ -1,0 +1,33 @@
+{% load jsrender %}
+
+{% jsrender checkbox-field-template-row %}
+	<label><input type='checkbox' class='jq-input' disabled='disabled' {{if selected}}checked='checked'{{/if}} /><span>{{>text}}</span></label>
+{% endjsrender %}
+			
+{% jsrender dfb-widgets-checkbox %}			
+	<div class='widget checkbox'>
+		{{include tmpl="#widget-common-label" /}}
+		<div class='option-wrap'>
+			{{for options}}				
+				{{include tmpl="#checkbox-field-template-row" /}}
+			{{/for}}
+		</div>				
+		{{include tmpl="#widget-common-helptext" /}}
+		{{include tmpl="#widget-common-footer" /}}
+	</div>
+{% endjsrender %}
+		
+{% jsrender checkbox-context-menu-template %}
+	<div class='context-menu checkbox'>
+		{{include tmpl="#context-menu-common-header" /}}
+		{{include tmpl="#context-menu-common-label" /}}
+		<div class='context-option-group jq-checkbox-options'>					
+			Options					
+			{{include tmpl="#context-menu-option-group" ~allowSelection=true ~allowMultiple=true ~groupName='ctx-checkbox-options' ~options=options /}}
+		</div>
+		<div class='context-option-group'>
+			{{include tmpl="#context-menu-common-required" /}}					
+		</div>
+		{{include tmpl="#context-menu-common-help" /}}
+	</div>
+{% endjsrender %}

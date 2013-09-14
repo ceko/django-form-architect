@@ -57,6 +57,7 @@ a.button:active {
 	opacity: .7;
 	background: #FFF url('../images/ajax-pacman-loader.gif') no-repeat center center;
 	box-shadow: inset 0 0 200px #000000;
+	z-index:400;
 }
 
 .ui-dialog-overlay {
@@ -68,10 +69,11 @@ a.button:active {
 	opacity: .7;
 	background: #FFF;
 	box-shadow: inset 0 0 200px #000000;
+	z-index:400;
 }
 
 .ui-window {
-	z-index:50;
+	z-index:500;
 	position: fixed;
 	top: -5px;
 	left: 50%;
@@ -116,8 +118,8 @@ a.button:active {
 	padding: 30px 15px;
 }
 
-#main-container {	
-	background:#EEE;
+#main-container {
+	background:#FFF;
 }
 
 #main-container .control-separator {
@@ -147,7 +149,7 @@ a.button:active {
 }
 
 #nav li:hover a {
-	color:#1BA1E2;
+	color:#1684B8;
 }
 
 #nav li a {	
@@ -155,31 +157,36 @@ a.button:active {
 	color: #FCFCFC;
 }
 
-#main-content {
+#main-content-wrap {
 	margin:auto;
-	max-width:1000px;			
+	max-width:1000px;
 }
 
-#main-content .gutter-outer-border {
-	border-left:10px solid #666;
-	border-right:1px solid #D4D4D4;	
-}
-
-#main-content .gutter-inner-border {
-	border-left: 350px solid #999;
-	padding-bottom:50px;	
+#main-content {	
+	background:#EEE;
+	display:table-cell;	
+	table-layout:fixed;			
 }
 
 #main-content .wide-column {
-	height:100%;	
-	float:left;		
-	margin-left:-350px;
+	height:100%;
 	width:350px;
+	display:table-cell;
+	vertical-align:top;
+	box-shadow:inset 5px 0px #4B4B4B;
+	background-color:#666;	
 }
 
-#main-content .main-column {	
-	background:#EEE;	
+#main-content .main-column {
 	color:#444;
+	margin-left:350px;
+	display:table-cell;	
+}
+
+#main-content .main-column.formbuilder {
+	box-shadow:0px 0px 5px #000;
+	position:relative;
+	z-index:25;
 }
 
 #footer-wrap {
@@ -198,17 +205,12 @@ a.button:active {
 
 /*form building*/
 
-#context-menu-header {
-	background:#1BA1E2;
-}
-
 #context-menu-container, #element-selector-container {		
-	position:relative;
-	margin-left:-10px;	
+	position:relative;		
 }
 
 #context-menu {
-	box-shadow: inset 10px 0px #1ba1e2;
+	box-shadow: inset 5px 0px #1684B8;
 	background: #BBE3F7;
 }
 
@@ -217,11 +219,12 @@ a.button:active {
 }
 
 #context-menu .slide {
-	width: 360px;		
+	width: 350px;		
 	min-height: 200px;
-	background: #1BA1E2;
+	background: #1684B8;
 	display:none;	
 	position:relative;
+	z-index:50;
 }
 
 #context-menu .slide .right-arrow {
@@ -232,14 +235,13 @@ a.button:active {
 	height: 0;
 	border-top: 10px solid transparent;
 	border-bottom: 10px solid transparent;
-	border-left: 10px solid #1ba1e2;
-	z-index: 50;
+	border-left: 10px solid #1684B8;	
 }
 
 #context-menu .context-option-group {
 	padding: 15px;
-	border-top: 1px solid #63C0ED;
-	border-bottom: 1px solid #1376A6;	
+	border-top: 1px solid #4FA8D3;
+	border-bottom: 1px solid #065175;	
 }
 
 #context-menu .context-option-group:first-child {
@@ -309,7 +311,7 @@ a.button:active {
 }
 
 .context-option.label input, .context-option.default input {	
-	width: 70%;
+	width: 68%;
 	display:inline-block
 }
 
@@ -323,7 +325,7 @@ a.button:active {
 
 .context-option.help-text textarea {
 	display:block;
-	width:320px;
+	width:305px;
 }
 
 .context-help {
@@ -334,7 +336,10 @@ a.button:active {
 }
 
 #form-builder-container {	
-	padding-top:20px
+	padding-top:20px;	
+	height:100%;
+	position:relative;
+	z-index:10;
 }
 
 #form-builder {	
@@ -497,6 +502,15 @@ input[type=radio], input[type=checkbox] {
 	border:1px solid transparent;
 	border-bottom:1px solid #D4D4D4;
 	border-top:1px solid #FFF;
+	position:relative;
+}
+
+#form-builder .widget-wrap .clickjack {
+	position:absolute;
+	top:0px;
+	right:0px;
+	bottom:0px;
+	left:0px;	
 }
 
 #form-builder .widget-wrap:first-child {	
@@ -525,8 +539,7 @@ input[type=radio], input[type=checkbox] {
 }
 
 #form-builder .widget-wrap.active {
-	background:#FCFCFC;			
-	position:relative;
+	background:#FCFCFC;
 }
 
 #form-builder .widget-wrap .controls {
@@ -569,7 +582,7 @@ input[type=radio], input[type=checkbox] {
 }
 
 #form-builder .helptext-wrap {
-	margin:5px 0px 0px 35%;	
+	margin:5px 0px 0px 34%;	
 	color: #999;
 }
 
@@ -656,6 +669,7 @@ input[type=radio], input[type=checkbox] {
 #form-builder .widget.section-break .label-wrap {
 	margin-left:0px;
 	font-size:22px;	
+	width:100%;
 }
 
 #form-builder .widget.section-break .helptext-wrap {
@@ -708,29 +722,90 @@ input[type=radio], input[type=checkbox] {
 .accordian-header {
 	padding:15px;
 	cursor:pointer;
+	background:#4B4B4B;		
+	box-shadow: inset 0px 1px #7E7E7E;
 }
 
- /** element selector **/
- #element-selector-header {
- 	background:#A05000;
- }
- 
+.accordian-header.active {
+	background-color:#1684B8;	
+	box-shadow: inset 0px 1px #51B8EA;
+}
+
+ /** element selector **/ 
 #element-selector-options {
 	display:none;	
-	box-shadow: inset 10px 0px #A05000;
-	background: #FEF7E0;
-	color:#444;
-	padding:10px 20px;
+	box-shadow: inset 5px 0px #1684B8;
+	background: #BBE3F7;
+	color:#FFF;
+	padding-left:5px;
+}
+
+#element-selector-options .form-element {
+	padding:10px;
+	border-bottom:1px solid #1684B8;
+	border-top:1px solid #81CBEF;
+	border-left:1px solid #1573A0;
+	background:#21A5E4;
+	cursor:pointer;
+	text-transform: lowercase;
+}
+
+.form-element:before {
+	font-family:FontAwesome;
+	font-style:normal;
+	font-weight:normal;
+	-webkit-font-smoothing: antialiased;	
+}
+
+#element-selector-options .form-element.dfb\.widgets\.TextBox:before {
+	content: "\f036";	
+}
+
+#element-selector-options .form-element.dfb\.widgets\.TextArea:before {
+	content: "\f036";	
+}
+
+#element-selector-options .form-element.dfb\.widgets\.CheckBox:before {
+	content: "\f03a";	
+}
+
+#element-selector-options .form-element.dfb\.widgets\.SelectionTable:before {
+	content: "\f0ce";	
+}
+
+#element-selector-options .form-element.dfb\.widgets\.SectionBreak:before {
+	content: "\f141";	
+}
+
+#element-selector-options .form-element.dfb\.widgets\.DropDown:before {
+	content: "\f150";	
+}
+
+#element-selector-options .form-element.dfb\.widgets\.RadioButton:before {
+	content: "\f0ca";	
+}
+
+#element-selector-options .form-element.dfb\.widgets\.PhoneNumber:before {
+	content: "\f095";	
+}
+
+#element-selector-options .form-element:first-child {
+	border-top:1px solid #105E83;
+}
+
+#element-selector-options .form-element:last-child {
+	border-bottom:none;
 }
 
 .cloned-form-element {
 	background:#FFF;
 	border:1px dashed #CCC;	
+	z-index:999999;	
 }
 
 .ui-form-element-placeholder {
-	box-shadow: inset 0px 0px 15px 1px #000;
-	background:#999;	
+	box-shadow: inset 0px 10px 10px 2px #000;
+	background:#333;	
 }
 
 .editable-text {

@@ -1,0 +1,25 @@
+{% load jsrender %}
+
+{% jsrender dfb-widgets-textarea %}
+	<div class='widget textarea'>			
+		{{include tmpl="#widget-common-label" /}}				
+		<div id='input-{{:uID}}-richtext-cover' class='richtext-cover' {{if content_type != 'richtext'}}style='display:none;'{{/if}}></div>
+		<textarea id='input-{{:uID}}' class='jq-input-handle-{{:uID}} jq-input jq-sizable jq-defaultable jq-configurable-content-type {{:size}}' {{if content_type == 'richtext'}}style='display:none;'{{/if}} data-content-type='{{:content_type}}' data-size='{{:size}}' disabled='disabled'>{{>default}}</textarea>				
+		{{include tmpl="#widget-common-helptext" /}}
+		{{include tmpl="#widget-common-footer" /}}
+	</div>
+{% endjsrender %}
+
+{% jsrender textarea-context-menu-template %}
+	<div class='context-menu textarea'>
+		{{include tmpl="#context-menu-common-header" /}}
+		{{include tmpl="#context-menu-common-label" /}}
+		{{include tmpl="#context-menu-common-default" /}}
+		<div class='context-option-group'>
+			{{include tmpl="#context-menu-common-required" /}}
+			{{include tmpl="#context-menu-common-size" /}}
+		</div>
+		{{include tmpl="#context-menu-content-type" /}}
+		{{include tmpl="#context-menu-common-help" /}}
+	</div>
+{% endjsrender %}

@@ -1,0 +1,52 @@
+{% load jsrender %}
+
+{% jsrender dfb-widgets-selectiontable %}
+	<div class='widget selection-table'>
+		{{include tmpl="#widget-common-label" /}}	
+		<table class='jq-table'>
+			<tr>
+				<th></th>
+				{{for options}}
+					<th>
+						{{>text}}
+					</th>
+				{{/for}}
+			</tr>
+			{{for rows}}
+				{{include tmpl="#selection-table-row" ~index=#index ~options=~root.options /}}
+			{{/for}}
+		</table>												
+		{{include tmpl="#widget-common-helptext" /}}
+		{{include tmpl="#widget-common-footer" /}}
+	</div>
+{% endjsrender %}
+
+{% jsrender selection-table-row %}
+	<tr>
+		<td>{{>text}}</td>
+		{{for ~options}}
+			<td data-text='{{>text}}'>
+				<input type='radio' value='{{:~index}}' {{if selected}}checked='checked'{{/if}} disabled='disabled' />
+			</td>
+		{{/for}}
+	</tr>
+{% endjsrender %}
+
+{% jsrender selection-table-context-menu-template %}
+	<div class='context-menu selection-table'>
+		{{include tmpl="#context-menu-common-header" /}}
+		{{include tmpl="#context-menu-common-label" /}}	
+		<div class='context-option-group jq-row-options'>					
+			Rows							
+			{{include tmpl="#context-menu-option-group" ~allowSelection=false ~groupName='ctx-row-options' ~options=rows /}}
+		</div>
+		<div class='context-option-group jq-column-options'>					
+			Columns				
+			{{include tmpl="#context-menu-option-group" ~allowSelection=true ~groupName='ctx-column-options' ~options=options /}}
+		</div>	
+		<div class='context-option-group'>
+			{{include tmpl="#context-menu-common-required" /}}					
+		</div>			
+		{{include tmpl="#context-menu-common-help" /}}
+	</div>
+{% endjsrender %}

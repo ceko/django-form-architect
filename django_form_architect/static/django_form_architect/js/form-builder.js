@@ -1,97 +1,4 @@
-/** inheritance helper **/
-/* Simple JavaScript Inheritance
- * By John Resig http://ejohn.org/
- * MIT Licensed.
- */
-// Inspired by base2 and Prototype
-(function(){
-  var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
- 
-  // The base Class implementation (does nothing)
-  this.Class = function(){};
- 
-  // Create a new Class that inherits from this class
-  Class.extend = function(prop) {
-    var _super = this.prototype;
-   
-    // Instantiate a base class (but only create the instance,
-    // don't run the init constructor)
-    initializing = true;
-    var prototype = new this();
-    initializing = false;
-   
-    // Copy the properties over onto the new prototype
-    for (var name in prop) {
-      // Check if we're overwriting an existing function
-      prototype[name] = typeof prop[name] == "function" &&
-        typeof _super[name] == "function" && fnTest.test(prop[name]) ?
-        (function(name, fn){
-          return function() {
-            var tmp = this._super;
-           
-            // Add a new ._super() method that is the same method
-            // but on the super-class
-            this._super = _super[name];
-           
-            // The method only need to be bound temporarily, so we
-            // remove it when we're done executing
-            var ret = fn.apply(this, arguments);        
-            this._super = tmp;
-           
-            return ret;
-          };
-        })(name, prop[name]) :
-        prop[name];
-    }
-   
-    // The dummy class constructor
-    function Class() {
-      // All construction is actually done in the init method
-      if ( !initializing && this.init )
-        this.init.apply(this, arguments);
-    }
-   
-    // Populate our constructed prototype object
-    Class.prototype = prototype;
-   
-    // Enforce the constructor to be what we expect
-    Class.prototype.constructor = Class;
- 
-    // And make this class extendable
-    Class.extend = arguments.callee;
-   
-    return Class;
-  };
-})();
-/** end inheritance helper **/
-
-/** csrf support for django **/
-$.ajaxSetup({ 
-    beforeSend: function(xhr, settings) {
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie != '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-        }
-        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-            // Only send the token to relative URLs i.e. locally.
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-        }
-    } 
-});
-/** end csrf support for django **/
-
-var dfb = {} || dfb;
+var dfb = dfb || {};
 
 /* context menu that shows up when a form item has been selected */
 dfb.ContextMenu = function() {
@@ -127,18 +34,30 @@ dfb.ContextMenu = function() {
 	
 	this.hideCurrentMenu = function() {
 		this.$slide.hide();
+		if(this.active_object) {
+			this.active_object.$html.closest('.widget-wrap').removeClass('active');
+		}
+		this.active_object = null;		
 	}
 	
 	this.hideIfActive = function(widget) {
 		if(this.active_object === widget) {
 			this.$slide.fadeOut('fast');
+			widget.$html.closest('.widget-wrap').removeClass('active');
+			this.active_object = null;
 		}
 	}
 	
 	this.positionMenuAtActive = function(suppress_animation) {
 		if(this.active_object) {
 			var $ctx_menu_header = $('#context-menu-header');
-			this.positionMenuAt(this.active_object.getElement().closest('.widget-wrap').position().top+20-$ctx_menu_header.offset().top + $ctx_menu_header.height(), suppress_animation);
+			var $widget_wrap = this.active_object.getElement().closest('.widget-wrap');
+			var widget_wrap_top = $widget_wrap.position().top;			
+			
+			if(widget_wrap_top === 0 || !$widget_wrap.is(':visible')) {
+				widget_wrap_top = $('#form-builder-fields .ui-form-element-placeholder').position().top;				
+			}
+			this.positionMenuAt(widget_wrap_top+20-$ctx_menu_header.offset().top + $ctx_menu_header.height(), suppress_animation);
 		}
 	}
 	
@@ -163,6 +82,38 @@ dfb.ContextMenu = function() {
 	}
 	
 };
+
+dfb.WidgetTypes = {
+	
+	widget_types: {},
+	add: function(key, type) {
+		this.widget_types[key] = type;
+	},	
+	getAll: function() {		
+		return this.widget_types;
+	},
+	get: function(key) {
+		return this.widget_types[key];
+	}			
+}
+
+dfb.WidgetType = function(options) {
+	
+	var getAutoTemplate = function(klass) {		
+		if(klass) {			
+			return '#' + klass.toLowerCase().replace(/\./g, '-');
+		}else{
+			return null;
+		}
+	};
+	
+	this.settings = $.extend({}, {		
+		name: 'undefined',
+		klass: null,
+		template: getAutoTemplate(options.klass)
+	}, options);
+	
+}
 
 dfb.FormBuilder = function(options) {
 	
@@ -191,47 +142,38 @@ dfb.FormBuilder = function(options) {
 			.click(function() {
 				_this.save.call(_this);
 				return false;
-			});
-		var is_dragging_active = false;
+			});		
 		this.$html
 			.find('#form-builder-fields')			
 			.droppable({
 				accept: ":not(.ui-sortable-helper)", /* so sorting doesn't trigger this */				
 			})			
 			.sortable({
+				helper: 'clone',
 				axis: 'y',
 				distance: 20,
 				connectWith: '.form-element',
 				placeholder: 'ui-form-element-placeholder',
-				stop: function(evt, ui) {
-					is_dragging_active = false;
+				stop: function(evt, ui) {					
 					if(!ui.item.data().initialized) {
 						ui.item.attr('id', null);
 						ui.item.attr('class', 'widget-wrap pageable');
 						loadDroppedWidget.call(_this, ui.item);						
-					}
+					}					
 					
-					dfb_globals.context_menu.positionMenuAtActive(true);
-					ui.item.find('.widget').data('widget').onDragStop();					
+					setTimeout(function() { dfb_globals.context_menu.positionMenuAtActive(true) }, 100);
+					var widget = ui.item.find('.widget').data('widget');
+					if(!dfb_globals.builder.getCurrentPage().hasWidget(widget)) {
+						widget.hide();
+					}
 				},
 				start: function(evt, ui){
-					if(dfb_globals.context_menu.getActiveObject() == ui.item.find('.widget').data('widget')) {
-						is_dragging_active = true;
-					}
 			        ui.placeholder.height(ui.helper.outerHeight());
 			    },
 			    change: function(evt, ui) {
 					dfb_globals.context_menu.positionMenuAtActive(true);					
 				},				
-			})
-			.on('mousemove', function(evt) {
-				if(is_dragging_active) {
-					$placeholder = $('#form-builder-fields .ui-form-element-placeholder');
-					if($placeholder.length > 0) {
-						dfb_globals.context_menu.positionMenuAtActive();
-					}
-				}
-			})
+			})			
 			.disableSelection();
 		this.$html.find('#pagination-tabs div.jq-add-page').on('click', function() {			
 			var page = dfb_globals.builder.addPage({
@@ -457,9 +399,9 @@ dfb.WidgetPage = function(options) {
 			hoverClass: 'ui-state-hover',
 			accept: '.pageable',
 			drop: function(evt, ui) {				
-				var widget = ui.draggable.find('.widget').data().widget;
+				var widget = ui.draggable.find('.widget').data().widget;				
 				dfb_globals.builder.getCurrentPage().moveWidgetTo(widget, _this);
-				window.dfb_globals.context_menu.hideIfActive(widget);
+				window.dfb_globals.context_menu.hideIfActive(widget);				
 			}
 		});
 		if(this.settings.selected) {
@@ -580,6 +522,10 @@ dfb.WidgetPage = function(options) {
 		}
 	};
 	
+	this.hasWidget = function(widget) {
+		return this.widgets.indexOf(widget) > -1;
+	};
+	
 	this.setPageName = function(value) {
 		this.$html.html(value);
 	};
@@ -612,8 +558,7 @@ dfb.ElementSelector = function(options) {
 			.draggable({
 				distance: 20,
 				cursor: 'move',
-				appendTo: 'body',
-				/*helper: 'clone',*/
+				appendTo: 'body',				
 				helper: function(evt) {
 					return $("<div class='cloned-form-element' style='width:300px;height:50px;'></div>");
 				},
@@ -681,7 +626,7 @@ dfb.widgets.WidgetBase = Class.extend({
 		this.template_selector = template_selector;
 		this.$html = $($.templates(template_selector).render(this.getTemplateData()));		
 		this.$controls = $($.templates('#widget-controls').render({}));		
-		return $([this.$controls[0], this.$html[0]]);
+		return $([$('<div class="clickjack"></div>')[0], this.$controls[0], this.$html[0]]);
 	},
 	setPid: function(value) {
 		this.settings.pid = value;
@@ -847,10 +792,12 @@ dfb.widgets.WidgetBase = Class.extend({
 	cmh_wireUpDefault: function($context_menu) {
 		var _this = this;
 		var $defaultable = this.getElement().find('.jq-defaultable');
+		var setDefault = function() {
+			$defaultable.val($(this).val());
+		};
 		$context_menu.find('.jq-default')
-			.keyup(function() {
-				$defaultable.val($(this).val());
-			})
+			.keyup(setDefault)
+			.blur(function() { setTimeout(setDefault.bind(this), 100)})
 			.val($.trim($defaultable.val()));
 	},
 	cmh_exportDefault: function() {
@@ -871,501 +818,6 @@ dfb.widgets.WidgetBase = Class.extend({
 		return this.getElement().find('.jq-configurable-content-type').data().contentType;
 	},	
 });
-
-dfb.widgets.CheckBox = dfb.widgets.WidgetBase.extend({
-	init: function(options) {		
-		this.settings = $.extend({}, {
-			label : 'Favorite activities',
-			context_menu_template_selector : '#checkbox-context-menu-template',
-			child_type : 'dfb.widgets.CheckBox',
-			options : [			  
-				{text: 'sleeping', selected: false},
-				{text: 'eating', selected: false},
-				{text: 'sleep-eating', selected: false}
-			],
-			configurables: [
-				'type',
-				'label',
-				'required',
-				'options',
-				'help_text'
-			]
-		}, options);		
-		this._super(this.settings);
-	},	
-	cmh_wireUpOptions: function($context_menu) {		
-		var _this = this;		
-		$context_menu.find('.jq-checkbox-options')
-			.contextmenuoptions({
-				allow_multiple : true,
-				on_remove : function(index) {	
-					_this.getElement().find('.option-wrap label:nth-child(' + (parseInt(index)+1) + ')').remove();					
-				},
-				on_add : function() {
-					$html = $($.templates('#checkbox-field-template-row').render({}));					
-					_this.getElement().find('.option-wrap').append($html);					
-				},
-				on_index_change : function(index, checked) {					
-					_this.getElement().find('.option-wrap label:nth-child(' + (parseInt(index)+1) + ') input').prop('checked', checked);
-				},		
-				on_text_change : function(index, text) {
-					_this.getElement().find('.option-wrap label:nth-child(' + (parseInt(index)+1) + ') span').text(text);					
-				}
-			}); /*should be configurable selector...*/				
-	},
-	cmh_exportOptions: function() {
-		var options = [];
-		$(this.getElement().find('.jq-input')).each(function() {			
-			options.push({
-				text : $.trim($(this).parent().text()),
-				selected : $(this).is(':checked')
-			});
-		});
-		return options;
-	}
-});
-
-dfb.widgets.RadioButton = dfb.widgets.WidgetBase.extend({
-	init: function(options) {		
-		this.settings = $.extend({}, {
-			label : 'Best Avenger(TM)',
-			context_menu_template_selector : '#radiobutton-context-menu-template',
-			child_type : 'dfb.widgets.RadioButton',
-			options : [			  
-				{text: 'Spock', selected: false},
-				{text: 'Scrooge McDuck', selected: true},
-				{text: 'Superman', selected: false}
-			],
-			configurables: [
-				'type',
-				'label',
-				'required',
-				'options',
-				'help_text'
-			]
-		}, options);		
-		this._super(this.settings);
-	},	
-	cmh_wireUpOptions: function($context_menu) {		
-		var _this = this;		
-		$context_menu.find('.jq-checkbox-options')
-			.contextmenuoptions({
-				allow_multiple : false,
-				radio_group_name: 'ctx-radiobutton-options',
-				on_remove : function(index) {	
-					_this.getElement().find('.option-wrap label:nth-child(' + (parseInt(index)+1) + ')').remove();					
-				},
-				on_add : function() {
-					$html = $($.templates('#radiobutton-field-template-row').render({}, {'groupId': _this.settings.uID}));					
-					_this.getElement().find('.option-wrap').append($html);					
-				},
-				on_index_change : function(index, checked) {				
-					var selected_value = $context_menu.find('.jq-checkbox-options input[type=radio]:checked').siblings('input[type=text]').val()					
-					_this.getElement().find('.option-wrap input').val([selected_value]);
-				},		
-				on_text_change : function(index, text) {
-					_this.getElement().find('.option-wrap label:nth-child(' + (parseInt(index)+1) + ') span').text(text);
-					_this.getElement().find('.option-wrap label:nth-child(' + (parseInt(index)+1) + ') input').val(window.htmlEncode(text));
-				}
-			}); /*should be configurable selector...*/				
-	},
-	cmh_exportOptions: function() {
-		var options = [];
-		$(this.getElement().find('.jq-input')).each(function() {			
-			options.push({
-				text : $.trim($(this).parent().text()),
-				selected : $(this).is(':checked')
-			});
-		});
-		return options;
-	}
-});
-
-dfb.widgets.TextBox = dfb.widgets.WidgetBase.extend({
-	init: function(options) {		
-		this.settings = $.extend({}, {
-			label : 'Pet\'s name',
-			context_menu_template_selector : '#textbox-context-menu-template',
-			child_type : 'dfb.widgets.TextBox',
-			size : 'm',
-			configurables: [
-				'type',
-				'label',
-				'required',
-				'help_text',
-				'size',
-				'default'
-			]
-		}, options);		
-		this._super(this.settings);
-	}
-});
-
-dfb.widgets.SectionBreak = dfb.widgets.WidgetBase.extend({
-	init: function(options) {		
-		this.settings = $.extend({}, {
-			label : 'Section Break',			
-			context_menu_template_selector : '#section-break-context-menu-template',
-			child_type : 'dfb.widgets.SectionBreak',
-			help_text : 'Put your section break info here.',
-			configurables: [
-				'type',
-				'label',				
-				'help_text',				
-			]
-		}, options);		
-		this._super(this.settings);
-	}
-});
-
-dfb.widgets.TextArea = dfb.widgets.WidgetBase.extend({
-	init: function(options) {		
-		this.settings = $.extend({}, {
-			label : 'Tell me all about it',
-			content_type : 'text',
-			size : 'm',
-			context_menu_template_selector : '#textarea-context-menu-template',
-			child_type : 'dfb.widgets.TextArea',
-			configurables: [
-				'type',
-				'label',
-				'required',
-				'help_text',
-				'size',
-				'default',
-				'content_type'
-			]
-		}, options);		
-		this._super(this.settings);
-	},	
-	onDragStop: function() {		
-		this.setContentTypeDisplay();
-	}
-});
-
-dfb.widgets.DropDown = dfb.widgets.WidgetBase.extend({
-	init: function(options) {		
-		this.settings = $.extend({}, {
-			label : 'Select an option',			
-			context_menu_template_selector : '#dropdown-context-menu-template',
-			child_type : 'dfb.widgets.DropDown',
-			size : 'm',
-			options : [
-			    {text: '', selected: true},
-				{text: 'option 1', selected: false},
-				{text: 'option 2', selected: false},
-				{text: 'option 3', selected: false}
-			],
-			configurables: [
-				'type',
-				'label',
-				'required',
-				'help_text',
-				'size',		
-				'options',
-			]
-		}, options);		
-		this._super(this.settings);
-	},
-	cmh_wireUpOptions: function($context_menu) {		
-		var _this = this;
-		var $input = this.getElement().find('.jq-input');
-		$context_menu.find('.jq-dropdown-options')
-			.contextmenuoptions({
-				on_remove : function(index) {					
-					$input.find('option').eq(index).remove();
-				},
-				on_add : function() {
-					$input.append('<option></option>');
-				},
-				on_index_change : function(index) {					
-					$input.find('option').eq(index).prop('selected', true);
-				},		
-				on_text_change : function(index, text) {					
-					$input.find('option').eq(index)
-						.val(text)
-						.text(text);
-				}
-			}); /*should be configurable selector...*/				
-	},
-	cmh_exportOptions: function() {
-		var options = [];
-		$(this.getElement().find('.jq-input option')).each(function() {			
-			options.push({
-				text : $(this).val(),
-				selected : $(this).is(':selected')
-			});
-		});
-		return options;
-	}
-});
-
-dfb.widgets.SelectionTable = dfb.widgets.WidgetBase.extend({
-	init: function(options) {		
-		this.settings = $.extend({}, {
-			label : 'Favorite soda?',			
-			context_menu_template_selector : '#selection-table-context-menu-template',
-			child_type : 'dfb.widgets.SelectionTable',			
-			options : [			    
-				{text: 'hate it', selected: false},
-				{text: 'meh', selected: true},
-				{text: 'love it', selected: false}
-			],
-			rows : [
-			    {text: 'orange', selected: false},
-			    {text: 'grape', selected: false},
-			    {text: 'lemon-lime', selected: false}
-			],
-			configurables: [
-				'type',
-				'label',
-				'required',
-				'help_text',						
-				'options',
-				'rows',
-			]
-		}, options);		
-		this._super(this.settings);
-	},
-	cmh_wireUpOptions: function($context_menu) {		
-		var _this = this;
-		var $table = this.getElement().find('table.jq-table');
-		$context_menu.find('.jq-column-options')
-			.contextmenuoptions({				
-				on_remove : function(index) {
-					$table_column = $table.find('tr>*:nth-child('+ (index+2) +')');
-					$table_column.fadeOut('fast', function() {
-						$table_column.remove();
-					});
-				},
-				on_add : function() {
-					//just recreate the whole table.					
-					var configurables = _this.exportConfigurables();
-					configurables.options = this.getOptions();
-					dfb_globals.builder.replaceWidget(_this, _this.settings.child_type, _this.template_selector, configurables);
-				},
-				on_index_change : function(index) {					
-					$table.find('input[type=radio]').prop('checked', false);
-					$table.find('tr td:nth-child(' + (parseInt(index)+2) + ') input[type=radio]').prop('checked', true);
-				},		
-				on_text_change : function(index, text) {					
-					$table.find('tr:first th:eq(' + (index+1) + ')').text(text);
-				}
-			}); 
-	},
-	cmh_exportOptions: function() {
-		var _this = this;
-		var options = [];
-		/* only use the second row in the table, which should always exist */
-		$(this.getElement().find('table.jq-table tr:eq(1) td:not(:first)')).each(function(index) {			
-			options.push({
-				text : $.trim(_this.getElement().find('table.jq-table th:nth-child(' + (parseInt(index) + 2) + ')').text()),
-				selected : $(this).find('input[type=radio]').is(':checked')
-			});
-		});
-		return options;
-	},
-	cmh_wireUpRows: function($context_menu) {
-		var _this = this;
-		var $table = this.getElement().find('table.jq-table');
-		$context_menu.find('.jq-row-options')
-			.contextmenuoptions({
-				allow_selection : false,
-				on_remove : function(index) {
-					$table_row = $table.find('tr:eq(' + (index+1) + ')');
-					$table_row.fadeOut('fast', function() {
-						$table_row.remove();
-					});
-				},
-				on_add : function() {
-					var $row = $($.templates('#selection-table-row').render({}, {
-						index: $context_menu.find('.jq-row-options .option-wrapper').length, 
-						options: _this.cmh_exportOptions(),
-					}));
-					$row.hide();
-					$table.append($row.fadeIn('fast'));
-				},
-				on_index_change : function(index) {					
-					
-				},		
-				on_text_change : function(index, text) {					
-					$table.find('tr:eq(' + (index+1) + ') td:first').text(text);
-				}
-			}); 
-	},
-	cmh_exportRows: function() {
-		var rows = [];
-		/* only use the second row in the table, which should always exist */
-		$(this.getElement().find('table.jq-table tr:not(:first-child)')).each(function() {			
-			rows.push({
-				text : $(this).find('td:first').text(),
-				selected : false
-			});
-		});
-		return rows;
-	},
-});
-
-dfb.ui = {
-	ui_id_cnt: 1,
-	$waiter: null,
-	$dialog_overlay: null,
-	getUniqueID: function() {
-		return this.ui_id_cnt++;
-	},
-	showWaiter: function() {
-		if(!this.$waiter) {
-			this.$waiter = $("<div class='ui-waiter'></div>");
-			$('body').append(this.$waiter);
-		}
-		this.$waiter.fadeIn('fast');
-	},
-	hideWaiter: function() {
-		this.$waiter.fadeOut('fast');
-	},
-	showDialogOverlay: function() {
-		if(!this.$dialog_overlay) {
-			this.$dialog_overlay = $("<div class='ui-dialog-overlay'></div>");
-			$('body').append(this.$dialog_overlay);
-		}
-		this.$dialog_overlay.fadeIn('fast');
-	},
-	hideDialogOverlay: function() {
-		this.$dialog_overlay.fadeOut('fast');
-	}	
-};
-
-dfb.ui.AccordianGroup = function(options) {
-	var settings = $.extend({}, {
-		animation_type: 'slide_down',	
-		members: [],		
-	}, options);	
-	var $focused_member = null;
-	var on_show = [];
-	
-	var init = function() {
-		var _this = this;
-		$.each(settings.members, function() {
-			$(this).click(function() { _this.showMember($(this)) });
-		});
-	};
-	
-	var runOnShows = function(tag) {
-		$.each(on_show, function() {
-			if(this.tag == tag) {
-				this.func();
-			}
-		});
-	};
-	
-	this.showMember = function($member, on_completion) {
-		if($focused_member && $member.get(0) === $focused_member.get(0)) {
-			if(on_completion) {
-				on_completion();				
-			}
-			runOnShows();
-			return;
-		}
-		
-		$.each(settings.members, function() {
-			$($(this).data().accordianContentSelector).slideUp('fast');
-		});
-		$($member.data().accordianContentSelector).slideDown('fast', function() { if(on_completion) on_completion(); runOnShows($member.data().tag); });
-		$focused_member = $member;
-	};
-	
-	this.showByTag = function(tag, on_completion) {
-		var $member = $(settings.members).filter(function() {
-			return $(this).data().tag == tag;
-		});
-		this.showMember($member.get(0), on_completion);
-	};
-	
-	this.onShow = function(tag, on_show_func) {
-		on_show.push({tag: tag, func: on_show_func});
-	};
-	
-	(function() {
-		init.apply(this);
-	}).apply(this);
-};
-
-dfb.ui.Window = function(options) {	
-
-	var settings = $.extend({}, {
-		animation_type: 'slide_down',	
-		template_selector: '#ui-window',
-		content: 'default content',
-		border_type: 'success',
-		show_buttons: false,
-		yes: function() { this.remove(); },
-		no: function() { this.remove(); },
-	}, options);		
-	var window_id = dfb.ui.getUniqueID(); 
-	var $window = null;
-	
-	this.show = function() {
-		if(!this.$window) {
-			var _this = this;
-			$window = $($.templates(settings.template_selector).render({
-				'window_id': window_id,
-				'content': settings.content,
-				'border_type': settings.border_type,
-				'show_buttons': settings.show_buttons
-			}));
-			$('body').append($window);
-			$window.find('.window-dismiss').click(function() {
-				_this.remove();
-			});
-		}
-		
-		switch(settings.animation_type) {
-			case 'dialog':
-				$window.fadeIn(300);
-				$window.find('.jq-yes').on('click', function() {
-					settings.yes.call(_this);
-					_this.remove();
-					return false;
-				});
-				$window.find('.jq-no').on('click', function() {
-					settings.no.call(_this);
-					_this.remove();
-					return false;
-				});
-				break;
-			default:
-				$window.slideDown(300);
-		}
-		
-	};
-	
-	this.remove = function() {		
-		var removeElement = function() { $window.remove() };
-		
-		switch(settings.animation_type) {
-			case 'dialog':
-				$window.fadeOut(removeElement);
-				dfb.ui.hideDialogOverlay();
-				break;
-			default:
-				$window.slideUp(removeElement);
-		}				
-	};
-	
-};
-
-dfb.ui.Window.showYesNoDialog = function(options) {
-	var settings = $.extend({}, {
-		animation_type: 'dialog',	
-		template_selector: '#ui-window',		
-		border_type: 'warning centered',
-		show_buttons: true
-	}, options);
-	
-	var window = new dfb.ui.Window(settings);
-	window.show();
-	dfb.ui.showDialogOverlay();
-};
 
 /** jquery plugins **/
 /** editable text plugin **/
@@ -1403,9 +855,7 @@ dfb.ui.Window.showYesNoDialog = function(options) {
 				_this.editing = true;
 			})
 			.bind('mouseover', function(evt) {
-				_this.$element.addClass('editable-text-hover');
-				/* hide other save/cancel controls */
-				//$('.editable-text-controls').hide();
+				_this.$element.addClass('editable-text-hover');								
 				_this.$element.find('.editable-text-controls').show();
 			})
 			.bind('mouseout', function(evt) {
@@ -1452,8 +902,7 @@ dfb.ui.Window.showYesNoDialog = function(options) {
 				_this.$element.removeClass('editable-text-hover');
 				evt.stopPropagation();
 			});
-		//$editor_controls.css({'left': this.$element.css('width')});
-		
+				
 		this.$element.prepend($editor_controls);
 		
 		if(this.options.textarea_mode) {
@@ -1623,25 +1072,18 @@ dfb.ui.Window.showYesNoDialog = function(options) {
 	
 })(jQuery, document, window); // end closure wrapper
 
-/** utility functions **/
-window.getFunctionFromString = function(string) {
-    var scope = window;
-    var scopeSplit = string.split('.');
-    for (i = 0; i < scopeSplit.length - 1; i++) {
-        scope = scope[scopeSplit[i]];
-
-        if (scope == undefined) return;
-    }
-
-    return scope[scopeSplit[scopeSplit.length - 1]];
-}
-
-window.htmlEncode = function(value){
-	//create a in-memory div, set it's inner text(which jQuery automatically encodes)
-	//then grab the encoded contents back out.  The div never exists on the page.
-	return $('<div/>').text(value).html();
-}
-
-window.htmlDecode = function(value){
-	return $('<div/>').html(value).text();
-}
+/** global template helpers **/
+$.views.helpers({
+	getWidgetTypes: function() {
+		//jsrender can't iterate object properties;
+		widgets = [];
+		all_widgets = dfb.WidgetTypes.getAll();
+		for(prop in all_widgets) {
+			if(all_widgets.hasOwnProperty(prop)) {
+				widgets.push(all_widgets[prop]);
+			}
+		}
+	
+		return widgets;
+	}
+});

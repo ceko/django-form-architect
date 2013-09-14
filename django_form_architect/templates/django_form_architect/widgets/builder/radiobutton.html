@@ -1,0 +1,33 @@
+{% load jsrender %}
+
+{% jsrender radiobutton-field-template-row %}			
+	<label><input type='radio' class='jq-input' name='radio-buttons-{{:~groupId}}' value='{{>text}}' disabled='disabled' {{if selected}}checked='checked'{{/if}} /><span>{{>text}}</span></label>
+{% endjsrender %}
+			
+{% jsrender dfb-widgets-radiobutton %}						
+	<div class='widget radiobutton'>			
+		{{include tmpl="#widget-common-label" /}}
+		<div class='option-wrap'>
+			{{for options}}				
+				{{include tmpl="#radiobutton-field-template-row" ~groupId=~root.uID /}}
+			{{/for}}
+		</div>				
+		{{include tmpl="#widget-common-helptext" /}}
+		{{include tmpl="#widget-common-footer" /}}
+	</div>
+{% endjsrender %}
+		
+{% jsrender radiobutton-context-menu-template %}
+	<div class='context-menu radiobutton'>
+		{{include tmpl="#context-menu-common-header" /}}
+		{{include tmpl="#context-menu-common-label" /}}
+		<div class='context-option-group jq-checkbox-options'>					
+			Options					
+			{{include tmpl="#context-menu-option-group" ~allowSelection=true ~allowMultiple=false ~groupName='ctx-radiobutton-options' ~options=options /}}
+		</div>
+		<div class='context-option-group'>
+			{{include tmpl="#context-menu-common-required" /}}					
+		</div>
+		{{include tmpl="#context-menu-common-help" /}}
+	</div>
+{% endjsrender %}
