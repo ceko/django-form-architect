@@ -1,10 +1,30 @@
 {% extends 'django_form_architect/base.html' %}
 
 {% block content %}
-	This is preliminary.  Will show several things.
-	<h2>My Forms</h2>
-	some form<br />
-	another form<br />
-	<h2>My results</h2>
-	this may actually show under my forms <br />
+	<div class='thin-column'>
+		
+	</div>
+	<div class='main-column wide'>
+		<div class='list-view-header'>
+			<h2>Form Library</h2>
+			
+						
+			<a href='{% url 'django_form_architect.views.build' %}' class='header-button'>
+				<i class='icon-plus'></i> <span>add new</span>
+			</a>
+			<div class='header-button'>
+				<input type='text' class='filter' />
+			</div>
+		</div>
+			{% for form in forms %}
+				<div class='list-view-item'>					
+					<div class='list-view-name'>{{form.name}}</div>
+					<a href='{% url 'django_form_architect.views.build' form.pid %}' class='list-view-button'>edit</a>
+					<a href='#' class='list-view-button'>responses</a>
+					<a href='{% url 'django_form_architect.views.share' form.pid %}' class='list-view-button'>share</a>
+					<div style='clear:both;'>&nbsp;</div>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
 {% endblock %}

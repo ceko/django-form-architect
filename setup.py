@@ -21,7 +21,8 @@ object.""",
       install_requires=[
           # -*- Extra requirements: -*-
           'django-polymorphic',
-          'django >= 1.5.1'
+          'django >= 1.5.1',
+          'south',
       ],
       entry_points="""
       # -*- Entry points: -*-

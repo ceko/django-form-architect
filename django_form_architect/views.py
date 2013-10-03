@@ -10,14 +10,19 @@ from operator import attrgetter
 
 
 def home(request):
+    forms = models.Form.objects.all()
     return render_to_response('django_form_architect/index.html', locals(), context_instance=RequestContext(request))
+
+def share(request, id):
+    form = get_object_or_404(models.Form.objects, pid=id)        
+    return render_to_response('django_form_architect/share.html', locals(), context_instance=RequestContext(request))
 
 @ensure_csrf_cookie
 def build(request, id=None):     
     if request.POST:        
         form_dict = json.loads(request.POST.get('form'))
         form = util.FormModelFactory.from_dict(form_dict)                    
-        page_request = json.loads(request.POST.get('pages'))                       
+        page_request = json.loads(request.POST.get('pages'))
         
         page_map = {}
         widget_pids = []    

@@ -18,7 +18,7 @@ def add_options(model, option_list, group='options'):
 class Form(models.Model):    
     pid = models.AutoField(primary_key=True)
     slug = models.SlugField(help_text='This is the url endpoint')
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=50)
     title = models.CharField(max_length=200)
     description = models.TextField()
     is_active = models.BooleanField(default=True, help_text='The endpoint will work only if this is true.')

@@ -9,11 +9,10 @@ html {
 }
 
 body {
-	height:100%;
-	background:#333;
+	height:100%;	
 	font-family:Verdana;
 	font-size:16px;
-	color:#FCFCFC;	
+	color:#FCFCFC;
 }
 
 a.button {	
@@ -118,8 +117,9 @@ a.button:active {
 	padding: 30px 15px;
 }
 
-#main-container {
-	background:#FFF;
+#main-container {	
+	height:100%;	
+	position:relative;
 }
 
 #main-container .control-separator {
@@ -129,6 +129,8 @@ a.button:active {
 
 #nav-wrapper {	
 	background:#333;
+	position:relative;
+	z-index:90;
 }
 
 #nav {
@@ -157,15 +159,45 @@ a.button:active {
 	color: #FCFCFC;
 }
 
+#main-content-positioner {
+	position:absolute;
+	left:0;
+	top:65px;
+	right:0;
+	bottom:0;
+}
+
+#main-content-background {
+	background:#FFF;
+	height:100%;	
+}
+
 #main-content-wrap {
 	margin:auto;
 	max-width:1000px;
+	display:table;
+	width:100%;
+	height:100%;
+	padding-bottom:100px;
+	box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	-webkit-box-sizing: border-box; 
 }
 
 #main-content {	
 	background:#EEE;
-	display:table-cell;	
-	table-layout:fixed;			
+	display:table-row;
+	height:100%;	
+	table-layout:fixed;
+}
+
+#main-content .thin-column {
+	height:100%;
+	width:100px;
+	display:table-cell;
+	vertical-align:top;
+	box-shadow:inset 5px 0px #4B4B4B;
+	background-color:#666;
 }
 
 #main-content .wide-column {
@@ -177,20 +209,31 @@ a.button:active {
 	background-color:#666;	
 }
 
+#main-content .one-column {
+}
+
 #main-content .main-column {
 	color:#444;
 	margin-left:350px;
 	display:table-cell;	
+	box-shadow: 0px 0px 5px #000;
+	position: relative;
+	z-index: 25;
 }
 
-#main-content .main-column.formbuilder {
-	box-shadow:0px 0px 5px #000;
-	position:relative;
-	z-index:25;
+#main-content .main-column.formbuilder {	
+	width:650px; /* make it push out to the max width by default */
 }
 
 #footer-wrap {
-	background:#333;
+	background:#333;	
+	position:relative;
+	z-index:50;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin-top:-100px;
+	height:100px;
 }
 
 #footer {
@@ -202,6 +245,99 @@ a.button:active {
 #footer .branding {
 	font-size:30px;
 }
+
+/* list-view */
+.list-view-header {	
+	background-color:#1684B8;
+	border-bottom:3px solid #0A4662;
+	height:70px;
+}
+
+.list-view-header h2 {	
+	padding:20px;
+	color:#FFF;
+	font-weight:normal;
+	display:inline-block;
+	vertical-align:middle;
+}
+
+.list-view-header .header-button {
+	height:100%;
+	padding:0px 30px;
+	display:inline-block;
+	vertical-align:middle;
+	font-size:24px;
+	float:right;	
+	color:#FFF;
+	border-left:1px solid #065175;
+	box-shadow: inset 1px 0px #4FA8D3;
+}
+
+.list-view-header .header-button > * {
+	position:relative;
+	top:20px;
+}
+
+.list-view-header a.header-button:hover {
+	background-color:#21A5E4;
+}
+
+.list-view-header a.header-button {
+	text-decoration:none;
+}
+
+.list-view-header .filter {
+	font-size:16px;
+	width:200px;		
+}
+
+.list-view-item {	
+	background-color:#FCFCFC;
+	border-bottom:1px solid #D4D4D4;
+	box-shadow:inset 0px -1px #FFF;	
+}
+
+.list-view-item > * {
+	padding:20px;
+	display:inline-block;
+	vertical-align:middle;
+}
+
+.list-view-item .list-view-name {
+	width:50%;
+	text-overflow: ellipsis;	
+	white-space: nowrap;
+	overflow: hidden;
+	position:absolute;
+}
+
+.list-view-item .list-view-button {
+	height:100%;
+	padding:20px 0;
+	text-align:center;
+	width:13%;
+	float:right;
+	border-left:1px solid #D4D4D4;
+	box-shadow: inset 1px 0px #FFF;
+	position:relative;
+	z-index:5; /* otherwise the name can cover up the buttons, making them unclickable */
+}
+
+.list-view-item .list-view-button > * {
+	
+}
+
+.list-view-item a.list-view-button:hover {
+	background-color:#FFF;
+}
+
+.list-view-item a.list-view-button {
+	text-decoration:none;
+	color:inherit;
+}
+
+
+/* end list-view */
 
 /*form building*/
 
@@ -219,7 +355,6 @@ a.button:active {
 }
 
 #context-menu .slide {
-	width: 350px;		
 	min-height: 200px;
 	background: #1684B8;
 	display:none;	
@@ -238,17 +373,18 @@ a.button:active {
 	border-left: 10px solid #1684B8;	
 }
 
-#context-menu .context-option-group {
+#context-menu .context-option-group{
+	background-color:#1684B8;
 	padding: 15px;
 	border-top: 1px solid #4FA8D3;
 	border-bottom: 1px solid #065175;	
 }
 
-#context-menu .context-option-group:first-child {
+#context-menu .context-option-group:first-child{
 	border-top:none;
 }
 
-#context-menu .context-option-group:last-child {
+#context-menu .context-option-group:last-child{
 	border-bottom:none;
 }
 
@@ -301,7 +437,7 @@ a.button:active {
 	display:inline-block;
 }
 
-.context-option label {
+.context-option label, .setting-group label {
 	display:inline-block;
 	width:80px;
 }
@@ -310,7 +446,7 @@ a.button:active {
 	width:100%;
 }
 
-.context-option.label input, .context-option.default input {	
+.context-option.label input, .context-option.default input, .setting-group input {	
 	width: 68%;
 	display:inline-block
 }
@@ -335,15 +471,16 @@ a.button:active {
 	padding: 5px;
 }
 
-#form-builder-container {	
-	padding-top:20px;	
+#form-builder-container {
 	height:100%;
 	position:relative;
 	z-index:10;
+	padding-bottom:20px;
 }
 
 #form-builder {	
 	position:relative;
+	padding-top:20px;
 }
 
 #form-builder .form-title {
@@ -365,6 +502,14 @@ a.button:active {
 #form-builder .form-description .editable-textbox {
 	width:100%;
 	font-family:Arial;
+}
+
+#form-settings .settings-wrap {
+	display:none;
+	box-shadow: inset 5px 0px #1684B8;
+	background: #BBE3F7;
+	color: #FFF;
+	padding-left: 5px;
 }
 
 #pagination-tabs {	
@@ -740,7 +885,7 @@ input[type=radio], input[type=checkbox] {
 	padding-left:5px;
 }
 
-#element-selector-options .form-element {
+#element-selector-options .form-element,  #form-settings .setting-group {
 	padding:10px;
 	border-bottom:1px solid #1684B8;
 	border-top:1px solid #81CBEF;
@@ -789,11 +934,11 @@ input[type=radio], input[type=checkbox] {
 	content: "\f095";	
 }
 
-#element-selector-options .form-element:first-child {
+#element-selector-options .form-element:first-child,  #form-settings .setting-group:first-child  {
 	border-top:1px solid #105E83;
 }
 
-#element-selector-options .form-element:last-child {
+#element-selector-options .form-element:last-child,  #form-settings .setting-group:last-child  {
 	border-bottom:none;
 }
 
@@ -856,6 +1001,15 @@ input[type=radio], input[type=checkbox] {
 .editable-text-hover {	
 	background: #FFE;
 	cursor:pointer;
+}
+
+.validation-header {
+	margin-bottom:25px;
+}
+
+.validation-error {
+	font-size:14px;
+	line-height:22px;
 }
 
 /*end form building*/

@@ -1,12 +1,30 @@
 var dfb = dfb || {};
 
+dfb.FormSettings = function(options) {
+	
+	this.settings = $.extend({}, {
+		name: null,		
+	}, options);
+	console.log(options);
+	this.render = function(template_selector) {
+		this.$html = $($.templates(template_selector).render(getTemplateData.call(this)));
+		this.$html.find('#form-name').val(this.settings.name);
+		return this.$html;		
+	}
+	
+	var getTemplateData = function() {
+		return {};
+	}
+	
+}
+
 /* context menu that shows up when a form item has been selected */
 dfb.ContextMenu = function() {
 	
 	this.active_object = null;
 	this.$slide = null;
 	
-	this.render = function(template_selector, container_selector) {
+	this.render = function(template_selector) {
 		this.$html = $($.templates(template_selector).render(getTemplateData.call(this)));
 		this.$slide = this.$html.find('.jq-slide');
 		return this.$html;		
@@ -57,7 +75,7 @@ dfb.ContextMenu = function() {
 			if(widget_wrap_top === 0 || !$widget_wrap.is(':visible')) {
 				widget_wrap_top = $('#form-builder-fields .ui-form-element-placeholder').position().top;				
 			}
-			this.positionMenuAt(widget_wrap_top+20-$ctx_menu_header.offset().top + $ctx_menu_header.height(), suppress_animation);
+			this.positionMenuAt(widget_wrap_top-$ctx_menu_header.offset().top-3 + $ctx_menu_header.height(), suppress_animation);
 		}
 	}
 	
@@ -211,18 +229,24 @@ dfb.FormBuilder = function(options) {
 		return page;
 	};
 	
-	this.save = function() {
-		dfb.ui.showWaiter();
-				
+	this.save = function() {						
+		var errors = [];
 		var _this = this;				
 		var form = {
 			'pid': $('#form-pid').val(),
 			'title': $.trim($('#form-title').text()),
-			'description': $.trim($('#form-description').html())
+			'description': $.trim($('#form-description').html()),
+			'name': $.trim($('#form-name').val()),
 		};
+		
+		/** @TODO: Basic validation **/
+		if(form.name == '') {
+			errors.push('set a form name under "change form settings"');
+		}
 		
 		var pages = [];		
 		var page_sequence = 0;
+		var has_widgets = false;
 		$('#pagination-tabs .page').each(function() {
 			var page = $(this).data().page;
 			var widgets = [];
@@ -232,7 +256,8 @@ dfb.FormBuilder = function(options) {
 			for(i=0;i<page.widgets.length;i++) {
 				var configurables = page.widgets[i].exportConfigurables();
 				configurables['sequence'] = widget_sequence++;
-				widgets.push(configurables);				
+				widgets.push(configurables);
+				has_widgets = true;
 			}
 			pages.push({
 				pid: page.getPid(),
@@ -241,7 +266,27 @@ dfb.FormBuilder = function(options) {
 				widgets: widgets
 			});
 		});
+		if(!has_widgets) {
+			errors.push('add at least one field');
+		}
 		
+		if(errors.length > 0) {
+			var error_html = '';
+			for(i=0;i<errors.length;i++) {
+				error_html += "<div class='validation-error'>" + errors[i] + "</div>";
+			}
+			
+			var window = new dfb.ui.Window({
+				content: '<div class="validation-header">Please correct the following</div>' + error_html,
+				border_type: 'failure',
+			});
+			window.show();
+			setTimeout(function(){window.remove()}, 5000);
+			
+			return;
+		}
+		
+		dfb.ui.showWaiter();
 		$.post('.',{
 			'pages': JSON.stringify(pages),
 			'form': JSON.stringify(form),			

@@ -16,17 +16,21 @@
 				</ul>
 				<div style='clear:both;'></div>				
 			</div>
-			<div id='main-content-wrap'>
-				<div id='main-content'>				
-					{% block content %}
-					{% endblock %}
+			<div id='main-content-positioner'>
+				<div id='main-content-background'>
+					<div id='main-content-wrap'>
+						<div id='main-content'>				
+							{% block content %}
+							{% endblock %}
+						</div>
+					</div>
+					<div id='footer-wrap'>
+						<div id='footer'>
+							<span class='branding'>Django Form Admin</span>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div id='footer-wrap'>
-				<div id='footer'>
-					<span class='branding'>Django Form Admin</span>
-				</div>
-			</div>
+			</div>			
 		</div> 
 		
 		{% block javascript %}

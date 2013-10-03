@@ -18,6 +18,7 @@
 		$(function() {
 			window.dfb_globals = {};
 			
+			dfb_globals.form_settings = new dfb.FormSettings({% if form %}{{form.json_serialize|safe}}{% endif %});
 			dfb_globals.context_menu = new dfb.ContextMenu();
 			dfb_globals.builder = new dfb.FormBuilder({% if form %}{{form.json_serialize|safe}}{% endif %});
 			dfb_globals.element_selector = new dfb.ElementSelector();
@@ -29,11 +30,12 @@
 				}));
 			{% endfor %}
 			
+			$('#form-settings-container').html(dfb_globals.form_settings.render('#form-settings-template'));
 			$('#context-menu-container').html(dfb_globals.context_menu.render('#context-menu-template'));
 			$('#form-builder-container').html(dfb_globals.builder.render('#form-builder-template'));
 			$('#element-selector-container').html(dfb_globals.element_selector.render('#element-selector-template'));
 			dfb_globals.left_menu_accordian = new dfb.ui.AccordianGroup({
-				members: [$('#context-menu-header'), $('#element-selector-header')],
+				members: [$('#form-settings-header'), $('#context-menu-header'), $('#element-selector-header')],
 			});
 			dfb_globals.left_menu_accordian.onShow('context-menu', function() {
 				dfb_globals.context_menu.positionMenuAtActive();
@@ -67,6 +69,8 @@
 
 {% block content %}
 	<div class='wide-column'>
+		<div id='form-settings-container'>
+		</div>		
 		<div id='element-selector-container'>		
 		</div>				
 		<div id='context-menu-container'>		
@@ -79,11 +83,27 @@
 	
 	<div style='clear:both;'></div>
 	
+		{% jsrender form-settings-template %}
+			<div id='form-settings'>
+				<div id='form-settings-header' class='accordian-header' data-tag='form-settings-menu' data-accordian-content-selector='#form-settings .settings-wrap'>
+					change form settings
+				</div>
+				<div class='settings-wrap'>
+					<div class='setting-group'>
+						<div class='setting'>
+							<label>name</label>
+							<input type='text' id='form-name' maxlength='50' />
+						</div>
+					</div>					
+				</div>
+			</div>
+		{% endjsrender %}
+	
 		<!-- pretty much all the work is done by javascript templates below -->
 		{% jsrender context-menu-template %}
 			<div id='context-menu'>
 				<div id='context-menu-header' class='accordian-header' data-tag='context-menu' data-accordian-content-selector='#context-menu .slide-wrap'>
-					context menu 
+					currently editing 
 				</div>
 				<div class='slide-wrap'>
 					<div class='slide jq-slide'>
@@ -98,6 +118,7 @@
 		{% jsrender form-builder-template %}
 			<div id='form-builder'>
 				<input id='form-pid' type='hidden' value='{{:pid}}' />
+								
 				<div id='form-title' class='jq-form-title form-title'>	
 					{{if title}}
 						{{:title}}
@@ -122,7 +143,7 @@
 					</div>
 				</div>
 				<div id='pagination-settings'>
-					<div class='collapsed toggle jq-toggle'><i class='icon-chevron-down'></i>show settings</div>
+					<div class='collapsed toggle jq-toggle'><i class='icon-chevron-down'></i>page settings</div>
 					<i class='icon-remove-sign jq-delete-page'></i>
 					<div class='settings jq-settings' style='display:none;'>
 						<label>Page name</label><input type='text' id='page-name' class='jq-page-name' />
