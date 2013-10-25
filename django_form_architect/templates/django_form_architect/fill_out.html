@@ -1,0 +1,26 @@
+{% extends 'django_form_architect/embed_base.html' %}
+
+{% block content %}
+	<div id="columns">
+		<form method='POST' action='.'>
+			{% csrf_token %} 
+			
+			{% if generated_form.errors %}
+				<ul class="form-errors">
+					<li class="error-header">
+						<i class='icon-remove'></i>		
+						there was an error on the current page					
+					</li>		
+				</ul>
+			{% endif %}
+			
+			<div>
+				{% for bound_field in generated_form %}
+					{% include bound_field.field.template_path with bound_field=bound_field %}				
+				{% endfor %}
+			</div>
+			
+			<input type='submit' value='submit' />
+		</form>
+	</div>
+{% endblock %}

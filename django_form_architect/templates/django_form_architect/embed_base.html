@@ -2,7 +2,8 @@
 <html lang='en'>
 	<head>
 		<title>{% block title %}Django Form Architect{% endblock %}</title>
-		<link href='{{ STATIC_URL }}django_form_architect/css/base.css' rel='stylesheet' type='text/css' media='screen' />
+		<link href='{{ STATIC_URL }}django_form_architect/css/embedded_host.css' rel='stylesheet' type='text/css' media='screen' />
+		<link href='{{ STATIC_URL }}django_form_architect/css/default_formstyles.css' rel='stylesheet' type='text/css' media='screen' />
 		<link href='{{ STATIC_URL }}django_form_architect/css/font-awesome.css' rel='stylesheet' type='text/css' media='screen' />
 	</head>
 	<body>
@@ -16,20 +17,9 @@
 				</ul>
 				<div style='clear:both;'></div>				
 			</div>
-			<div id='main-content-positioner'>
-				<div id='main-content-background'>
-					<div id='main-content-wrap'>
-						<div id='main-content'>				
-							{% block content %}
-							{% endblock %}
-						</div>
-					</div>
-					<div id='footer-wrap'>
-						<div id='footer'>
-							<span class='branding'>Django Form Admin</span>
-						</div>
-					</div>
-				</div>
+			<div id='form-wrapper'>								
+				{% block content %}
+				{% endblock %}				
 			</div>			
 		</div> 
 		

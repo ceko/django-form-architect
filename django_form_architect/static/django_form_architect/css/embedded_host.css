@@ -1,0 +1,36 @@
+
+html {
+	height:100%;
+	overflow-y: scroll; /* displaying and hiding the scrollbar kicks around page content. */
+}
+
+#nav-wrapper {	
+	background:#333;
+	position:relative;
+	z-index:90;
+}
+
+#nav {
+	font-size:16px;	
+	margin: auto 10px;				
+}
+
+#nav li {
+	margin:0px;
+	list-style: none;
+	display:inline-block;
+	margin:15px 30px 15px 0px;			
+}
+
+#nav li i {
+	margin-right:10px;	
+}
+
+#nav li:hover a {
+	color:#1684B8;
+}
+
+#nav li a {	
+	text-decoration:none;
+	color: #FCFCFC;
+}

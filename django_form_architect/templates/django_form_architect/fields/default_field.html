@@ -1,0 +1,18 @@
+
+<label for='{{ bound_field.auto_id}}' class='{% if bound_field.field.required %}required{% endif %} {% if bound_field.errors %}error{% endif %}'>{{ bound_field.label }}</label>
+<p class='caption'>
+	{{ bound_field.help_text }}
+</p>	
+{{ bound_field.as_widget }}
+
+{% if bound_field.errors %}
+	<div class="input-error-wrap">
+		<div class="arrow"></div>
+		<ul class="error-list">
+			{% for error in bound_field.errors %}
+				<li class="field-error">{{ error }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+{% endif %}
+

@@ -1,6 +1,5 @@
 import models
 
-
 class FormModelFactory(object):
     
     @staticmethod

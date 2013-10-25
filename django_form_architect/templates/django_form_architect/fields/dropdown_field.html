@@ -1,0 +1,10 @@
+<label for='{{ bound_field.auto_id}}'>{{ bound_field.label }}</label>
+<p class='caption'>
+	{{ bound_field.help_text }}
+</p>	
+<div class='dropdown'>
+	{{ bound_field.as_widget }}
+</div>
+
+{{ bound_field.errors }}
+

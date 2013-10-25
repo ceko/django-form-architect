@@ -40,22 +40,22 @@ class Form(models.Model):
         return "endpoint:  {0} active: {1}".format(self.slug, self.is_active)
  
 class Page(models.Model):
-     pid = models.AutoField(primary_key=True)
-     name = models.CharField(max_length=50)
-     sequence = models.IntegerField(default=0)
-     form= models.ForeignKey(Form)
+    pid = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    sequence = models.IntegerField(default=0)
+    form= models.ForeignKey(Form)
      
-     def active_widgets(self):
-         return self.widget_set.filter(is_active=True)
+    def active_widgets(self):
+        return self.widget_set.filter(is_active=True)
      
-     def json_serialize(self):
-         return json.dumps({
+    def json_serialize(self):
+        return json.dumps({
             'pid': self.pid,
             'name': self.name,
             'sequence': self.sequence
-         })
+        })
      
-     class Meta:    
+    class Meta:    
         ordering = ('sequence',)     
          
 class Widget(PolymorphicModel):
